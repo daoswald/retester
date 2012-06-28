@@ -11,7 +11,6 @@ use Safe;
 use Carp;
 
 use YAPE::Regex::Explain;
-use GraphViz::Regex;
 
 our $VERSION = 0.01;
 
@@ -27,9 +26,6 @@ has explanation => (
     is  => 'ro',
 );
 
-has graphviz    => (
-    is  => 'ro',
-);
 
 sub BUILDARGS {
     my( $class, @args ) = @_;
@@ -50,11 +46,9 @@ sub BUILDARGS {
     } catch {
         $explanation = q{};
     };
-    my $graphviz    = GraphViz::Regex->new($regexp_obj)->as_png;
     return {
         regexp_obj  => $regexp_obj,
         explanation => $explanation,
-        graphviz    => $graphviz,
     };
 }
 
