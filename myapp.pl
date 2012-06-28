@@ -20,7 +20,6 @@ any '/' => sub {
         $self->stash( match_success => $success         );
         $self->stash( captures      => $re->captures    );
         $self->stash( explanation   => $re->explanation );
-        $self->stash( graphviz      => $re->graphviz    );
     }
     $self->render('index');
 };
