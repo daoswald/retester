@@ -19,10 +19,6 @@ has regexp_obj => (
     is => 'ro',
 );
 
-has captures => (
-    is  => 'rw',
-);
-
 has explanation => (
     is  => 'ro',
 );
@@ -30,6 +26,38 @@ has explanation => (
 has graphviz    => (
     is  => 'ro',
 );
+
+has prematch    => (
+    is => 'rw',
+);
+
+has match       => (
+    is => 'rw',
+);
+
+has postmatch   => (
+    is  => 'rw',
+);
+
+has carat_n     => (
+    is  => 'rw',
+);
+
+has digits      => (
+    is  => 'rw',
+
+has array_minus => (
+    is  => 'rw',
+);
+
+has array_plus  => (
+    is  => 'rw',
+)
+
+has hash_minus  => (
+    is  => 'rw',
+);
+
 
 sub BUILDARGS {
     my( $class, @args ) = @_;
@@ -46,7 +74,7 @@ sub BUILDARGS {
     my $explanation;
     try {
         $explanation = YAPE::Regex::Explain->new($regexp_obj)->explain;
-        $explanation =~ s/^The regular expression:\s+matches as follows:\s+//;
+#        $explanation =~ s/^The regular expression:\s+matches as follows:\s+//;
     } catch {
         $explanation = q{};
     };
@@ -61,12 +89,7 @@ sub BUILDARGS {
 sub match {
     my( $self, $target ) = @_;
     my $re_obj = $self->regexp_obj;
-    my $match = $self->_safe_match_gather( $target, $re_obj );
-    return if ! defined $match;     # An exception was thrown during match.
-    if( $match && ref $match eq 'HASH' ) {
-        $self->captures( $match );
-    }
-    return $match ? 1 : 0;
+    return scalar $self->_safe_match_gather( $target, $re_obj );
 }
 
 
@@ -105,30 +128,28 @@ sub _sanitize_re_string {
 sub _safe_match_gather {
     my ( $self, $target ) = @_;
     my $re_obj = $self->regexp_obj;
-    my $match = 0;
-    my $result;
+    $self->matched(0);
     try {
-        $result = $target =~ m/$re_obj/;
+        $self->matched( scalar $target =~ m/$re_obj/ );
     } catch {
-        $match = undef;
+        $self->matched( undef );
         warn "Problem in matching: $_";
     };
     if( $target =~ m/$re_obj/ ) {
-        $match = {  # If there's a match, build an anonymous hash.
-            '$<digits>' => [ 
-                map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#- 
-            ],
-            '$+{name}'  => { %+ },
-            '$-{name}'  => { %- },
-            '${^PREMATCH}'  => ${^PREMATCH},
-            '${^MATCH}'     => ${^MATCH},
-            '${^POSTMATCH}' => ${^POSTMATCH},
-            '$^N'           => $^N,
-            '@-'            => [ @- ],
-            '@+'            => [ @+ ],
-        };
+            $self->matched( 1 );
+            $self->digits(
+                [ map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#- ]
+            );
+            $self->hash_plus(   { %+ }        );
+            $self->hash_minus(  { %- }        );
+            $self->prematch(    ${^PREMATCH}  );
+            $self->match(       ${^MATCH}     );
+            $self->postmatch(   ${^POSTMATCH} );
+            $self->carat_n(     $^N           );
+            $self->array_minus( [ @- ]        );
+            $self->array_plus(  [ @+ ]        );
     }
-    return $match;
+    return $self->matched
 }
 
 1;
