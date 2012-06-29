@@ -159,5 +159,11 @@ __DATA__
       </header>
     </article>
     <%= content %>
+    <footer>
+      <p>
+        © 2012 - David Oswald.  Powered by Perl with a healthy dose of
+        Mojolicious.
+      </p>
+    </footer>
   </body>
 </html>
