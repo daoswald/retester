@@ -111,7 +111,7 @@ __DATA__
           <li>Digit Captures
             <ul>
             %  foreach my $digit ( 1 .. $#{$digits} ) {
-              %== "<li><pre>\$$digit => $digits->[$digit]</pre></li>"
+              %== "<li><code>\$$digit => $digits->[$digit]</code></li>"
             % }
             </ul>
           </li>
@@ -120,20 +120,20 @@ __DATA__
           <li>Named Captures
             <ul>
               % foreach my $name ( keys %{$hash_plus} ) {
-                %== "<li><pre>\$+{$name} => $hash_plus->{$name}</pre></li>"
+                %== "<li><code>\$+{$name} => $hash_plus->{$name}</code></li>"
               % }
             </ul>
           </li>
         % }
-        %== defined $prematch  && "<li><pre>\${^PREMATCH}  => $prematch</pre></li>"
-        %== defined $match     && "<li><pre>\${^MATCH}     => $match</pre></li>"
-        %== defined $postmatch && "<li><pre>\${^POSTMATCH} => $postmatch</pre></li>"
-        %== defined $carat_n   && "<li><pre>\$^N           => $carat_n</pre></li>"
+        %== defined $prematch  && "<li><code>\${^PREMATCH}  => $prematch</code></li>"
+        %== defined $match     && "<li><code>\${^MATCH}     => $match</code></li>"
+        %== defined $postmatch && "<li><code>\${^POSTMATCH} => $postmatch</code></li>"
+        %== defined $carat_n   && "<li><code>\$^N           => $carat_n</code></li>"
         % foreach my $name ( keys %{$hash_minus} ) {
-          %== "<li><pre>\$-{$name} => (@{$hash_minus->{$name}})</pre></li>"
+          %== "<li><code>\$-{$name} => (@{$hash_minus->{$name}})</code></li>"
         % }
-        %== @{$array_minus} && "<li><pre>\@- => (@{$array_minus})</pre></li>"
-        %== @{$array_plus}  && "<li><pre>\@+ => (@{$array_plus})</pre></li>"
+        %== @{$array_minus} && "<li><code>\@- => (@{$array_minus})</code></li>"
+        %== @{$array_plus}  && "<li><code>\@+ => (@{$array_plus})</code></li>"
     </ul>
   </article>
 % }
@@ -161,7 +161,7 @@ __DATA__
     <%= content %>
     <footer>
       <p>
-        ©2012 - David Oswald.  Powered by Perl with a healthy dose of
+        ©2012 - David Oswald.  Powered by Perl with a tasty serving of
         Mojolicious.
       </p>
     </footer>
