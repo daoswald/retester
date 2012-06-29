@@ -84,22 +84,24 @@ sub _safe_match_gather {
     $self->target($target);
     my $re_obj = $self->regexp_obj;
     $self->matched(0);
-    try { $self->matched( scalar $target =~ m/$re_obj/ ); }
+    try {
+        $self->matched(1) if $target =~ m/$re_obj/;
+        my $matched = $self->matched;
+        $self->digits(
+            [ map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#- ] );
+        $self->hash_plus(   $matched ? {%+}          : undef );
+        $self->hash_minus(  $matched ? {%-}          : undef );
+        $self->prematch(    $matched ? ${^PREMATCH}  : undef );
+        $self->match(       $matched ? ${^MATCH}     : undef );
+        $self->postmatch(   $matched ? ${^POSTMATCH} : undef );
+        $self->carat_n(     $matched ? $^N           : undef );
+        $self->array_minus( $matched ? [@-]          : undef );
+        $self->array_plus(  $matched ? [@+]          : undef );
+    }
     catch {
         $self->matched(undef);
         warn "Problem in matching: $_";
     };
-    my $matched = $self->matched;
-    $self->digits(
-        [ map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#- ] );
-    $self->hash_plus( $matched   ? {%+}          : undef );
-    $self->hash_minus( $matched  ? {%-}          : undef );
-    $self->prematch( $matched    ? ${^PREMATCH}  : undef );
-    $self->match( $matched       ? ${^MATCH}     : undef );
-    $self->postmatch( $matched   ? ${^POSTMATCH} : undef );
-    $self->carat_n( $matched     ? $^N           : undef );
-    $self->array_minus( $matched ? [@-]          : undef );
-    $self->array_plus( $matched  ? [@+]          : undef );
 
     return $self->matched;
 }
