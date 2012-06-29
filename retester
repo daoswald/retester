@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
 
+use utf8;
 use lib 'lib';
-
 use SafeMatchStats;
 
 app->secret('Some Session Secret');
@@ -161,7 +161,7 @@ __DATA__
     <%= content %>
     <footer>
       <p>
-        © 2012 - David Oswald.  Powered by Perl with a healthy dose of
+        ©2012 - David Oswald.  Powered by Perl with a healthy dose of
         Mojolicious.
       </p>
     </footer>
