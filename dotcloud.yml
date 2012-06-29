@@ -1,4 +1,4 @@
 www:
   type: perl
-  approot: retester.pl
+  approot: retester
 
