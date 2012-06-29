@@ -1,4 +1,3 @@
 www:
   type: perl
-  approot: retester
 
