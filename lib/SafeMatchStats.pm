@@ -3,7 +3,7 @@ package SafeMatchStats;
 use Moo;
 use Sub::Quote;
 
-use v5.14;
+use v5.12;
 use utf8;
 use feature qw( unicode_strings );
 
