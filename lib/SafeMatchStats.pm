@@ -8,7 +8,6 @@ use utf8;
 use feature qw( unicode_strings );
 
 use Try::Tiny;
-use Capture::Tiny qw( capture_merged );
 use Safe;
 use Carp;
 
