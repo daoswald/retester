@@ -89,8 +89,7 @@ sub _safe_match_gather {
         $self->matched(undef);
         warn "Problem in matching: $_";
     };
-    my $matched;
-    $matched = $self->matched(1) if $target =~ m/$re_obj/;
+    my $matched = $self->matched;
     $self->digits(
         [ map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#- ] );
     $self->hash_plus( $matched   ? {%+}          : undef );
