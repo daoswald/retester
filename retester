@@ -13,7 +13,7 @@ app->defaults(
           qw( match_success   prematch    match
               postmatch       carat_n     digits
               array_minus     array_plus  hash_minus
-              hash_plus                               )
+              hash_plus       debug_info              )
     }
 );
 
@@ -31,6 +31,8 @@ any '/' => sub {
         );
         $self->stash(
             match_success => $re->do_match( $self->param('target') ) );
+        $self->stash(
+            debug_info    => $re->debug_info( $self->param('target' ) ) );
         $self->stash(
             {
                 prematch    => $re->prematch,
@@ -152,6 +154,14 @@ __DATA__
     </ul>
   </article>
 % }
+
+% if( defined $debug_info ) { 
+    <article>
+      <h3>Debug Info:</h3>
+      <pre><%= $debug_info =%></pre>
+    </article>
+% }
+
 
 @@ pod.html.ep
 % layout 'default';

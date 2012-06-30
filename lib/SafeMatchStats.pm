@@ -8,12 +8,14 @@ use utf8;
 use feature qw( unicode_strings );
 
 use Try::Tiny;
+use Capture::Tiny qw( capture );
 use Safe;
 use Carp;
 
 our $VERSION = 0.01;
 
 has regexp_obj  => ( is => 'ro' );
+has regexp_str  => ( is => 'ro' );
 has prematch    => ( is => 'rw' );
 has match       => ( is => 'rw' );
 has matched     => ( is => 'rw' );
@@ -34,12 +36,16 @@ sub BUILDARGS {
     croak "Usage: $class\->new( { regexp_str => 'PATTERN' "
       . "[, regexp_mods => '[msixadlu^-]+' } )"
       if !exists $args_hash->{regexp_str};
+    my $full_regex_str = $class->_gen_re_string(
+        $args_hash->{regexp_str}, $args_hash->{regexp_mods}
+    );
     my $regexp_obj =
-      $class->_safe_qr( $args_hash->{regexp_str}, $args_hash->{regexp_mods} );
+      $class->_safe_qr( $full_regex_str );
     croak "Couldn't generate a valid regexp object."
       if !ref $regexp_obj eq 'Regexp';
     return {
         regexp_obj => $regexp_obj,
+        regexp_str => $full_regex_str,
         matched    => 0,
     };
 }
@@ -49,14 +55,19 @@ sub do_match {
     return scalar $self->_safe_match_gather( $target, $self->regexp_obj );
 }
 
+sub _gen_re_string {
+    my( $self, $raw_re_str, $raw_mods ) = @_;
+    my $re_str = $self->_sanitize_re_string( $raw_re_str );
+    my $mod_str = $self->_sanitize_re_modifiers( $raw_mods );
+    return "(?$mod_str:$re_str)";
+}
+
 sub _safe_qr {
-    my ( $self, $regexp, $modifiers ) = @_;
+    my ( $self, $re_str ) = @_;
     my $compartment = Safe->new;
-    ${ $compartment->varglob('regexp') } = $self->_sanitize_re_string($regexp);
-    ${ $compartment->varglob('modifiers') } =
-      $self->_sanitize_re_modifiers($modifiers);
+    ${ $compartment->varglob('regexp') } = $re_str;
     my $re_obj =
-      $compartment->reval('my $safe_reg = qr/(?$modifiers:$regexp)/;');
+      $compartment->reval('my $safe_reg = qr/$regexp/;');
     return if $@;    # Return "undef" if 'reval' caught an exception.
     return $re_obj;  # Otherwise return a regexp object.
 }
@@ -105,5 +116,28 @@ sub _safe_match_gather {
 
     return $self->matched;
 }
+
+sub debug_info {
+    my ( $self, $target ) = @_;
+    my $re_string = $self->regexp_str;
+    my( undef, $stderr, undef )
+        = capture { $self->_do_re_debug( $target, $re_string ) };
+    return $stderr;
+}
+
+sub _do_re_debug {
+    my( $self, $target, $regex ) = @_;
+    my $rv;
+    try {
+        use re q/debug/;
+        $rv = $target =~ m/$regex/;
+    }
+    catch {
+        s/\sat\s[\w.]+\sline\s\d+\.$/./;
+        print STDERR "$_\n";
+    };
+    return $rv;
+}
+    
 
 1;
