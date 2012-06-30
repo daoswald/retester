@@ -88,6 +88,9 @@ __DATA__
       <small>
         Example: To test "<code>m/pattern/</code>", enter
         "<code>pattern</code>" (without quotes).
+        <br />
+        Patterns that contain "Special Variable" interpolations will have those
+        interpolations escaped.
       </small>
   </p>
   <p>
@@ -98,6 +101,13 @@ __DATA__
                                 maxlength   => '10'
     %>
     %= submit_button
+    <br />
+      <small>
+        <code>/g</code> isn't currently available.
+        <br />
+        <code>/r</code> is set by default to provide full access to 
+        match variables.
+      </small>
   </p>
 %end
 
