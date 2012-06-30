@@ -50,6 +50,7 @@ sub BUILDARGS {
     };
 }
 
+
 sub do_match {
     my ( $self, $target ) = @_;
     return scalar $self->_safe_match_gather( $target, $self->regexp_obj );

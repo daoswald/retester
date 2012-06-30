@@ -90,9 +90,6 @@ __DATA__
       <small>
         Example: To test "<code>m/pattern/</code>", enter
         "<code>pattern</code>" (without quotes).
-        <br />
-        Patterns that contain "Special Variable" interpolations will have those
-        interpolations escaped.
       </small>
   </p>
   <p>
@@ -163,6 +160,7 @@ __DATA__
 % }
 
 
+
 @@ pod.html.ep
 % layout 'default';
 % title 'Documentation Browser';
@@ -170,6 +168,7 @@ __DATA__
 <iframe src='/perldoc/<%=$poddoc=%>', 
     seamless='seamless', width='1000', height='750'>
 </iframe>
+
 
 
 @@ layouts/default.html.ep
@@ -180,12 +179,15 @@ __DATA__
     <article>
       <header>
         [
-          <%= link_to '/' => begin %>The Perl Regex Tester<% end =%> |
+          <%= link_to '/' => begin %>The Perl Regex Tester <%end=%> |
           <a href='/pod/perlre'>perlre</a> |
           <a href='/pod/perlrequick'>perlrequick</a> |
           <a href='/pod/perlretut'>perlretut</a> |
+          <a href='/pod/perlreref'>perlreref</a> |
+          <a href='/pod/perlrecharclass'>perlrecharclass</a> |
           <a href='/pod/perlop'>perlop</a> |
-          <a href='/pod/perlfaq6'>perlfaq6</a>
+          <a href='/pod/perlfaq6'>perlfaq6</a> |
+          <a href='/pod/perluniprops'>perluniprops</a>
         ]
       </header>
     </article>
