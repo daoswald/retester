@@ -10,12 +10,15 @@ use Capture::Tiny qw( capture );
 use Safe;
 use Carp;
 
+use Data::Dumper;
+
 our $VERSION = 0.01;
 
 has regex         => ( is => 'ro', required => 1 ); # User input (constructor).
 has modifiers     => ( is => 'ro'                ); # User input (constructor).
-has regexp_str    => ( is => 'ro', lazy => 1, builder => \&_gen_re_string );
-has regexp_obj    => ( is => 'ro', lazy => 1, builder => \&_safe_qr       );
+has g_modifier    => ( is => 'ro', lazy => 1, builder => '_has_g_modifier' );
+has regexp_str    => ( is => 'ro', lazy => 1, builder => '_gen_re_string' );
+has regexp_obj    => ( is => 'ro', lazy => 1, builder => '_safe_qr'       );
 has target        => ( is => 'rw', lazy => 1, default => sub { q{} } );
 has _capture_dump => ( is => 'rw' );
 has matched       => ( is => 'rw', default => sub{ undef } );
@@ -23,12 +26,12 @@ has debug_info    => ( is => 'ro', lazy => 1, default => \&_debug_info );
 
 # Captures
 my @attribs = qw/   prematch    match       postmatch   carat_n     digits  
-                    array_minus array_plus  hash_minus  hash_plus           /;
+                    array_minus array_plus  hash_minus  hash_plus   match_rv /;
 
 foreach my $attrib ( @attribs  ) {
     has $attrib => ( 
         is      => 'ro', lazy    => 1, 
-        builder => sub{ 
+        default => sub{ 
             return $_[0]->matched ? $_[0]->_capture_dump->{$attrib} : undef;
         }
     );
@@ -57,10 +60,16 @@ sub _gen_re_string {
 sub _sanitize_re_string {
     my ( $self, $re_string ) = @_;
     no warnings 'qw';
-    my @bad_varnames = qw%    \$\^\w    \@ENV    \$ENV
-      \$[0()<>#!+-]    \$\{[\w()<>+^-]}    \@\{\w+}     %;
+    my @bad_varnames = qw%    \$\^\w         \@ENV             \$ENV
+                              \$[0<>#!+-]    \$\{[\w<>+^-]}    \@\{\w+}     %;
     $re_string =~ s/(?<!\\)($_)/\\$1/g foreach @bad_varnames;
     return $re_string;
+}
+
+sub _has_g_modifier {
+    my $self = shift;
+    return 0 if ! $self->modifiers || ! $self->modifiers =~ m/g/;
+    return 1;
 }
 
 sub _sanitize_re_modifiers {
@@ -89,20 +98,29 @@ sub _safe_match_gather {
     $self->matched(0);
     try {
         alarm(2);
-        $self->matched(1) if $target =~ m/$re_obj/;
+        my @match_rv;
+        # Using logical short circuit operators because we can't have our
+        # special match variables falling out of an if(){} block scope.
+        $self->g_modifier
+            && ( ( @match_rv ) = $target =~ m/$re_obj/g )
+            && ( $self->matched( @match_rv ? 1 : 0 ) );
+        ! $self->g_modifier
+            && $target =~ m/$re_obj/ 
+            && $self->matched(1);
         alarm(0);
         if( $self->matched ) {
-            $self->match_dump( {
-                digits    => 
+            $self->_capture_dump( {
+                digits      => 
                     [ map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#- ],
-                hash_plus => {%+},
-                hash_minus => {%-},
-                prematch   => ${^PREMATCH},
-                match      => ${^MATCH},
-                postmatch  => ${^POSTMATCH},
-                carat_n    => $^N,
+                hash_plus   => {%+},
+                hash_minus  => {%-},
+                prematch    => ${^PREMATCH},
+                match       => ${^MATCH},
+                postmatch   => ${^POSTMATCH},
+                carat_n     => $^N,
                 array_minus => [ @- ],
                 array_plus  => [ @+ ],
+                match_rv    => [ @match_rv ],
             } );
         }
     }
@@ -116,20 +134,24 @@ sub _safe_match_gather {
 
 sub _debug_info {
     my $self = shift;
-    my $rv;
+    my ( $rv, @rv );
     my( undef, $stderr, undef ) = capture { 
         try {
             alarm(2);
             use re q/debug/;
             my $regex = $self->regexp_str;
-            $rv = $self->target =~ m/$regex/;
+            if( $self->g_modifier ) {
+                @rv = $self->target =~ m/$regex/g;
+            }
+            else {
+                $rv = $self->target =~ m/$regex/;
+            }
             alarm(0);
         }
         catch {
             print STDERR "Exception thrown during debug: ", 
                          _remove_diag_linenums($_), "\n";
         };
-        $rv;
     };
     return $stderr;
 }

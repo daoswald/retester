@@ -32,7 +32,9 @@ any '/' => sub {
         $self->stash(
             match_success => $re->do_match( $self->param('target') ) );
         $self->stash(
-            debug_info    => $re->debug_info( $self->param('target' ) ) );
+            debug_info    => $re->debug_info );
+        $self->stash(
+            g_modifier    => $re->g_modifier );
         $self->stash(
             {
                 prematch    => $re->prematch,
@@ -44,6 +46,7 @@ any '/' => sub {
                 array_plus  => $re->array_plus,
                 hash_minus  => $re->hash_minus,
                 hash_plus   => $re->hash_plus,
+                match_rv    => $re->match_rv ? $re->match_rv : undef,
             }
         );
     }
@@ -102,9 +105,9 @@ __DATA__
     %= submit_button
     <br />
       <small>
-        <code>/g</code> isn't currently available.
+        Using the <code>/g</code> modifier will run match in list context.
         <br />
-        <code>/r</code> is set by default to provide full access to 
+        <code>/r</code> is set by default to provide access to all
         match variables.
       </small>
   </p>
@@ -121,12 +124,21 @@ __DATA__
   <article>
     <h3>Capture variables:</h3>
       <ul>
+        %  if( $g_modifier ) {
+          <li>List Context Return Values
+            <ul>
+            %  foreach my $rv ( @{$match_rv} ) {
+              %== "<li><code>$rv</code></li>"
+            %  }
+            </ul>
+          </li>
+        %  }
         %  if( @{$digits} > 1 ) {
           <li>Digit Captures
             <ul>
             %  foreach my $digit ( 1 .. $#{$digits} ) {
               %== "<li><code>\$$digit => $digits->[$digit]</code></li>"
-            % }
+            %  }
             </ul>
           </li>
         % }
@@ -146,6 +158,7 @@ __DATA__
         % foreach my $name ( keys %{$hash_minus} ) {
           %== "<li><code>\$-{$name} => (@{$hash_minus->{$name}})</code></li>"
         % }
+        %= dumper $hash_plus;
         %== @{$array_minus} && "<li><code>\@- => (@{$array_minus})</code></li>"
         %== @{$array_plus}  && "<li><code>\@+ => (@{$array_plus})</code></li>"
     </ul>
