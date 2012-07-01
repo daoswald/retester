@@ -1,7 +1,6 @@
 package SafeMatchStats;
 
 use Moo;
-
 use v5.12;
 use utf8;
 use feature qw( unicode_strings );
@@ -13,18 +12,14 @@ use Carp;
 
 our $VERSION = 0.01;
 
-
-# Constructor:
-has regex        => ( is => 'ro', required => 1 );  # User input (constructor).
-has modifiers    => ( is => 'ro'                );  # User input (constructor).
-
-has regexp_str   => ( is => 'rw', lazy => 1, builder => \&_gen_re_string );
-has regexp_obj   => ( is => 'rw', lazy => 1, builder => \&_safe_qr       );
-
-# Set by a call to do_match().
-has target       => ( is => 'rw', lazy => 1, default => sub { q{} } );
-has capture_dump => ( is => 'rw' );
-has matched      => ( is => 'rw', default => sub{ undef } );
+has regex         => ( is => 'ro', required => 1 ); # User input (constructor).
+has modifiers     => ( is => 'ro'                ); # User input (constructor).
+has regexp_str    => ( is => 'ro', lazy => 1, builder => \&_gen_re_string );
+has regexp_obj    => ( is => 'ro', lazy => 1, builder => \&_safe_qr       );
+has target        => ( is => 'rw', lazy => 1, default => sub { q{} } );
+has _capture_dump => ( is => 'rw' );
+has matched       => ( is => 'rw', default => sub{ undef } );
+has debug_info    => ( is => 'ro', lazy => 1, default => \&_debug_info );
 
 # Captures
 my @attribs = qw/   prematch    match       postmatch   carat_n     digits  
@@ -34,13 +29,10 @@ foreach my $attrib ( @attribs  ) {
     has $attrib => ( 
         is      => 'ro', lazy    => 1, 
         builder => sub{ 
-            return $_[0]->matched ? $_[0]->capture_dump->{$attrib} : undef;
+            return $_[0]->matched ? $_[0]->_capture_dump->{$attrib} : undef;
         }
     );
 }
-
-# Debug: The debugger dump from match.
-has debug_info  => ( is => 'rw', lazy => 1, default => \&_debug_info );
 
 around BUILDARGS => sub {
     my ( $orig, $class, @args ) = @_;
@@ -52,7 +44,7 @@ around BUILDARGS => sub {
 sub do_match {
     my ( $self, $target ) = @_;
     $self->target( $target // $self->target );
-    return scalar $self->_safe_match_gather( $self->target, $self->regexp_obj );
+    return scalar $self->_safe_match_gather;
 }
 
 sub _gen_re_string {
@@ -91,12 +83,14 @@ sub _safe_qr {
 }
 
 sub _safe_match_gather {
-    my $self = shift @_;
+    my $self = shift;
     my $target = $self->target;
     my $re_obj = $self->regexp_obj;
     $self->matched(0);
     try {
+        alarm(2);
         $self->matched(1) if $target =~ m/$re_obj/;
+        alarm(0);
         if( $self->matched ) {
             $self->match_dump( {
                 digits    => 
@@ -114,9 +108,9 @@ sub _safe_match_gather {
     }
     catch {
         $self->matched(undef);
-        warn "Problem in matching: $_";
+        my $message = _remove_diag_linenums( $_ );
+        warn "Match threw an exception: $message";
     };
-
     return $self->matched;
 }
 
@@ -125,18 +119,25 @@ sub _debug_info {
     my $rv;
     my( undef, $stderr, undef ) = capture { 
         try {
+            alarm(2);
             use re q/debug/;
             my $regex = $self->regexp_str;
             $rv = $self->target =~ m/$regex/;
+            alarm(0);
         }
         catch {
-            s/\sat\s[\w.]+\sline\s\d+\.$/./;
-            print STDERR "$_\n";
-            $rv = undef;
+            print STDERR "Exception thrown during debug: ", 
+                         _remove_diag_linenums($_), "\n";
         };
         $rv;
     };
     return $stderr;
+}
+
+sub _remove_diag_linenums {
+    my $message = shift;
+    $message =~ s/\sat\s[\w.]+\sline\s\d+\.$/./;
+    return $message;
 }
 
 1;

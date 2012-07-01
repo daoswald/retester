@@ -25,8 +25,8 @@ any '/' => sub {
     if ( $self->param('regexp') ) {
         my $re = SafeMatchStats->new(
             {
-                regexp_str  => $self->param('regexp')    || '',
-                regexp_mods => $self->param('modifiers') || ''
+                regex     => $self->param('regexp')    || '',
+                modifiers => $self->param('modifiers') || ''
             }
         );
         $self->stash(
