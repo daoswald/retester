@@ -10,8 +10,6 @@ use Capture::Tiny qw( capture );
 use Safe;
 use Carp;
 
-use Data::Dumper;
-
 our $VERSION = 0.01;
 
 has regex         => ( is => 'ro', required => 1 ); # User input (constructor).
