@@ -13,7 +13,8 @@ app->defaults(
           qw( match_success   prematch    match
               postmatch       carat_n     digits
               array_minus     array_plus  hash_minus
-              hash_plus       debug_info              )
+              hash_plus       debug_info  g_modifier
+              match_rv                                )
     }
 );
 
@@ -99,7 +100,7 @@ __DATA__
     Modifiers:
     <br />
     <%= text_field 'modifiers', cols        => '30', 
-                                placeholder => 'Valid Modifiers: [msixadlu]',
+                                placeholder => 'Valid Modifiers: [gmsixadlu]',
                                 maxlength   => '10'
     %>
     %= submit_button
@@ -128,7 +129,7 @@ __DATA__
           <li>List Context Return Values
             <ul>
             %  foreach my $rv ( @{$match_rv} ) {
-              %== "<li><code>$rv</code></li>"
+              %== "<li>[<mark><code>$rv</code></mark>]</li>"
             %  }
             </ul>
           </li>
@@ -137,7 +138,7 @@ __DATA__
           <li>Digit Captures
             <ul>
             %  foreach my $digit ( 1 .. $#{$digits} ) {
-              %== "<li><code>\$$digit => $digits->[$digit]</code></li>"
+              %== "<li><code>\$$digit =></code> [<mark><code>$digits->[$digit]</code></mark>]</li>"
             %  }
             </ul>
           </li>
@@ -146,21 +147,20 @@ __DATA__
           <li>Named Captures
             <ul>
               % foreach my $name ( keys %{$hash_plus} ) {
-                %== "<li><code>\$+{$name} => $hash_plus->{$name}</code></li>"
+                %== "<li>\$+{$name} => [<mark><code>$hash_plus->{$name}</code></mark>]</li>"
               % }
             </ul>
           </li>
         % }
-        %== defined $prematch  && "<li><code>\${^PREMATCH}  => $prematch</code></li>"
-        %== defined $match     && "<li><code>\${^MATCH}     => $match</code></li>"
-        %== defined $postmatch && "<li><code>\${^POSTMATCH} => $postmatch</code></li>"
-        %== defined $carat_n   && "<li><code>\$^N           => $carat_n</code></li>"
+        %== defined $prematch  && "<li><code>\${^PREMATCH} =></code> [<mark><code>$prematch</code></mark>]</li>"
+        %== defined $match     && "<li><code>\${^MATCH} =></code> [<mark><code>$match</code></mark>]</li>"
+        %== defined $postmatch && "<li><code>\${^POSTMATCH} =></code> [<mark><code>$postmatch</code></mark>]</li>"
+        %== defined $carat_n   && "<li><code>\$^N =></code> [<mark><code>$carat_n</code></mark>]</li>"
         % foreach my $name ( keys %{$hash_minus} ) {
           %== "<li><code>\$-{$name} => (@{$hash_minus->{$name}})</code></li>"
         % }
-        %= dumper $hash_plus;
-        %== @{$array_minus} && "<li><code>\@- => (@{$array_minus})</code></li>"
-        %== @{$array_plus}  && "<li><code>\@+ => (@{$array_plus})</code></li>"
+        %== @{$array_minus} && "<li><code>\@- => </code>(<code>@{$array_minus}</code>)</li>"
+        %== @{$array_plus}  && "<li><code>\@+ => </code>(<code>@{$array_plus}</code>)</li>"
     </ul>
   </article>
 % }
