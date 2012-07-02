@@ -93,6 +93,8 @@ sub _safe_match_gather {
     my $self = shift;
     my $target = $self->target;
     my $re_obj = $self->regexp_obj;
+    # Can't do a match if the regexp didn't compile.
+    return $self->matched(undef) if index( ref( $re_obj ), 'Regex' ) < 0;
     $self->matched(0);
     try {
         alarm(3);
@@ -132,6 +134,8 @@ sub _safe_match_gather {
 sub _debug_info {
     my $self = shift;
     my ( $rv, @rv );
+    return 'Invalid regular expression.'
+        if index( ref( $self->regexp_obj ), 'Regex' ) < 0;
     my( undef, $stderr, undef ) = capture { 
         try {
             alarm(3);

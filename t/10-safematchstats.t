@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use lib 'lib';
 use Test::More;
+use Test::Exception;
+use Data::Dumper;
 
 BEGIN { use_ok( 'SafeMatchStats' ); }
 
@@ -27,5 +29,20 @@ my $r2 = new_ok( 'SafeMatchStats', [ { regex => '(d)', modifiers => 'g' } ] );
 ok( $r2->do_match( 'asdfg' ), 'Successful /g modifier match (list context)' );
 ok( $r2->matched, 'matched Ok with /g' );
 is_deeply( $r2->match_rv, [ 'd' ], 'Match_rv ok with /g.' );
+
+
+my $r3;
+
+lives_ok { $r3 = SafeMatchStats->new(regex=>'[c-a]') } 
+         'Lives through instantiation with bad regex.';
+
+lives_ok { $r3->do_match('asdf') }
+         'Lives through matching against a bad regex.';
+
+lives_ok { $r3->array_plus }
+         'Lives through an accessor after matching against a bad regex.';
+
+lives_ok { $r3->debug_info }
+         'Lives through "debug_info" after matching against a bad regex.';
 
 done_testing();
