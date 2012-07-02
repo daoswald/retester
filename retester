@@ -21,6 +21,7 @@ app->defaults(
 plugin 'PoweredBy';
 plugin 'PODRenderer';
 
+
 any '/' => sub {
     my $self = shift;
     if ( $self->param('regexp') ) {
@@ -79,7 +80,8 @@ __DATA__
     <br />
     <%= text_area 'target', cols        => 79, rows => 5,
                             placeholder => 'Target string',
-                            maxlength   => 2048
+                            maxlength   => 2048,
+                            title       => 'Enter a string to be targeted in the pattern match.'
     =%>
   </p>
   <p>
@@ -88,7 +90,8 @@ __DATA__
     <%=
       text_area 'regexp', cols        => 79, rows => 5,
                           placeholder => 'Regular Expression',
-                          maxlength   => 2048
+                          maxlength   => 2048,
+                          title       => 'Enter a valid Perl regular expression.  Delimeters aren\'t necessary.'
     =%>
     <br />
       <small>
@@ -101,7 +104,9 @@ __DATA__
     <br />
     <%= text_field 'modifiers', cols        => '30', 
                                 placeholder => 'Valid Modifiers: [gmsixadlu]',
-                                maxlength   => '10'
+                                maxlength   => '10',
+                                pattern     => '(?:[gmsixadlu^-][gmsixadlu-]{0,10})?',
+                                title       => 'Valid modifiers are from the set, [gmsixadlu^-], or none at all'
     %>
     %= submit_button
     <br />
@@ -187,21 +192,27 @@ __DATA__
 @@ layouts/default.html.ep
 <!DOCTYPE html>
 <html>
-  <head><title><%= title %></title></head>
+  <head>
+    <title><%= title %></title>
+    %= stylesheet '/css/prettify-mojo.css'
+    %= javascript '/js/prettify.js'
+  </head>
   <body>
     <article>
       <header>
-        [
-          <%= link_to '/' => begin %>The Perl Regex Tester <%end=%> |
-          <a href='/pod/perlre'>perlre</a> |
-          <a href='/pod/perlrequick'>perlrequick</a> |
-          <a href='/pod/perlretut'>perlretut</a> |
-          <a href='/pod/perlreref'>perlreref</a> |
-          <a href='/pod/perlrecharclass'>perlrecharclass</a> |
-          <a href='/pod/perlop'>perlop</a> |
-          <a href='/pod/perlfaq6'>perlfaq6</a> |
-          <a href='/pod/perluniprops'>perluniprops</a>
-        ]
+        <nav>
+            [
+              <%= link_to '/' => begin %>The Perl Regex Tester <%end=%> |
+              <a href='/pod/perlre'>perlre</a> |
+              <a href='/pod/perlrequick'>perlrequick</a> |
+              <a href='/pod/perlretut'>perlretut</a> |
+              <a href='/pod/perlreref'>perlreref</a> |
+              <a href='/pod/perlrecharclass'>perlrecharclass</a> |
+              <a href='/pod/perlop'>perlop</a> |
+              <a href='/pod/perlfaq6'>perlfaq6</a> |
+              <a href='/pod/perluniprops'>perluniprops</a>
+            ]
+        <nav>
       </header>
     </article>
     <%= content %>
