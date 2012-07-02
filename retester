@@ -1,56 +1,48 @@
 #!/usr/bin/env perl
-use Mojolicious::Lite;
 
+use Mojolicious::Lite;
 use utf8;
+use feature qw( unicode_strings );
 use lib 'lib';
 use SafeMatchStats;
 
-app->secret('Some Session Secret');
+app->secret('Some Session Secret'); # Unimportant: We're not using sessions.
 
-app->defaults(
-    {
-        map { $_, undef }
-          qw( match_success   prematch    match
-              postmatch       carat_n     digits
-              array_minus     array_plus  hash_minus
-              hash_plus       debug_info  g_modifier
-              match_rv                                )
-    }
+my @match_stats = qw( debug_info    g_modifier  prematch        match
+                      postmatch     carat_n     digits          array_minus
+                      array_plus    hash_minus  hash_plus                   );
+
+my @nav_bar_items = (
+    [ '/'                   => 'The Perl Regex Tester'  ],
+    [ '/pod/perlre'         => 'perlre'                 ],
+    [ '/pod/perlrequick'    => 'perlrequick'            ],
+    [ '/pod/perlretut'      => 'perlretut'              ],
+    [ '/pod/perlreref'      => 'perlreref'              ],
+    [ '/pod/perlrecharclass'=> 'perlrecharclass'        ],
+    [ '/pod/perlop'         => 'perlop'                 ],
+    [ '/pod/perlfaq6'       => 'perlfaq6'               ],
+    [ '/pod/perluniprops'   => 'perluniprops'           ],
 );
+ 
+app->defaults( {
+    map { $_, undef } 'match_success', 'match_rv', @match_stats
+} );    # Instantiate some defaults in the stash; makes for simpler templates.
 
 plugin 'PoweredBy';
 plugin 'PODRenderer';
 
-
 any '/' => sub {
     my $self = shift;
     if ( $self->param('regexp') ) {
-        my $re = SafeMatchStats->new(
-            {
+        my $re = SafeMatchStats->new( {
                 regex     => $self->param('regexp')    || '',
                 modifiers => $self->param('modifiers') || ''
-            }
+        } );
+        $self->stash(
+            match_success => $re->do_match( $self->param('target') )
         );
-        $self->stash(
-            match_success => $re->do_match( $self->param('target') ) );
-        $self->stash(
-            debug_info    => $re->debug_info );
-        $self->stash(
-            g_modifier    => $re->g_modifier );
-        $self->stash(
-            {
-                prematch    => $re->prematch,
-                match       => $re->match,
-                postmatch   => $re->postmatch,
-                carat_n     => $re->carat_n,
-                digits      => $re->digits,
-                array_minus => $re->array_minus,
-                array_plus  => $re->array_plus,
-                hash_minus  => $re->hash_minus,
-                hash_plus   => $re->hash_plus,
-                match_rv    => $re->match_rv ? $re->match_rv : undef,
-            }
-        );
+        $self->stash( match_rv => $re->match_rv ? $re->match_rv : undef );
+        $self->stash( { map { $_ => $re->$_ } @match_stats } );
     }
     $self->render('index');
 };
@@ -106,7 +98,7 @@ __DATA__
                                 placeholder => 'Valid Modifiers: [gmsixadlu]',
                                 maxlength   => '10',
                                 pattern     => '(?:[gmsixadlu^-][gmsixadlu-]{0,10})?',
-                                title       => 'Valid modifiers are from the set, [gmsixadlu^-], or none at all'
+                                title       => 'Valid modifiers are from the set [gmsixadlu^-], or none at all'
     %>
     %= submit_button
     <br />
