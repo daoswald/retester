@@ -159,7 +159,7 @@ sub _debug_info {
 
 sub _remove_diag_linenums {
     my $message = shift;
-    $message =~ s/\sat\s[\w.]+\sline\s\d+\.$/./;
+    $message =~ s/\sat\s.+$/.../;
     return $message;
 }
 
