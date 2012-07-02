@@ -174,8 +174,6 @@ __DATA__
     </article>
 % }
 
-
-
 @@ pod.html.ep
 % layout 'default';
 % title 'Documentation Browser';

@@ -25,7 +25,6 @@ has target     => ( is => 'rw', lazy => 1, default => sub { q{} } );
 has _capture_dump => ( is => 'rw' );
 has matched       => ( is => 'rw', default => sub { undef } );
 has debug_info    => ( is => 'ro', lazy => 1, default => \&_debug_info );
-
 # Captures
 my @attribs = qw/   prematch    match       postmatch   carat_n     digits
   array_minus array_plus  hash_minus  hash_plus   match_rv /;
@@ -142,9 +141,9 @@ sub _safe_match_gather {
 
 sub _debug_info {
     my $self = shift;
-    my ( $rv, @rv );
     return 'Invalid regular expression.'
       if index( ref( $self->regexp_obj ), 'Regex' ) < 0;
+    my ( $rv, @rv );
     my ( undef, $stderr, undef ) = capture {
         try {
             alarm ALARM_TIMEOUT;
