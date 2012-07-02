@@ -95,7 +95,7 @@ sub _safe_match_gather {
     my $re_obj = $self->regexp_obj;
     $self->matched(0);
     try {
-        alarm(2);
+        alarm(3);
         my @match_rv;
         # Using logical short circuit operators because we can't have our
         # special match variables falling out of an if(){} block scope.
@@ -124,8 +124,7 @@ sub _safe_match_gather {
     }
     catch {
         $self->matched(undef);
-        my $message = _remove_diag_linenums( $_ );
-        warn "Match threw an exception: $message";
+        carp "Match threw an exception: $_";
     };
     return $self->matched;
 }
@@ -135,7 +134,7 @@ sub _debug_info {
     my ( $rv, @rv );
     my( undef, $stderr, undef ) = capture { 
         try {
-            alarm(2);
+            alarm(3);
             use re q/debug/;
             my $regex = $self->regexp_str;
             if( $self->g_modifier ) {

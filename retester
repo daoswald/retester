@@ -67,10 +67,10 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'Perl Regex Tester';
-<h1><%= title =%></h1>
-<p>
+<h1 class="page-header"><%= title =%></h1>
+<h3>
     Test Perl regular expressions against target strings.
-</p>
+</h3>
 <p>
     The regexp engine used is compatible with Perl <%= " $^V" =%>.
 </p>
@@ -119,7 +119,7 @@ __DATA__
   </p>
 %end
 
-<article>
+<article class="float-match">
 %== '<h2>Match!</h2>' if $match_success
 %== '<h2>No match!</h2>' if defined $match_success && ! $match_success
 %== '<h2>Invalid regular expression!</h2>' if param('regexp') && ! defined $match_success
@@ -127,7 +127,7 @@ __DATA__
 <% if( $match_success ) {
     local $" = ',';
 =%>
-  <article>
+  <article class="float-captures">
     <h3>Capture variables:</h3>
       <ul>
         %  if( $g_modifier ) {
@@ -193,28 +193,30 @@ __DATA__
 <!DOCTYPE html>
 <html>
   <head>
+    %= stylesheet '/bootstrap/css/bootstrap.css'
+    %= stylesheet '/bootstrap/css/bootstrap-responsive.css'
+    %= stylesheet '/css/page_style_bootstrap1.css'
+    %= javascript '/bootstrap/js/bootstrap.js'
     <title><%= title %></title>
-    %= stylesheet '/css/prettify-mojo.css'
-    %= javascript '/js/prettify.js'
   </head>
   <body>
-    <article>
-      <header>
-        <nav>
-            [
-              <%= link_to '/' => begin %>The Perl Regex Tester <%end=%> |
-              <a href='/pod/perlre'>perlre</a> |
-              <a href='/pod/perlrequick'>perlrequick</a> |
-              <a href='/pod/perlretut'>perlretut</a> |
-              <a href='/pod/perlreref'>perlreref</a> |
-              <a href='/pod/perlrecharclass'>perlrecharclass</a> |
-              <a href='/pod/perlop'>perlop</a> |
-              <a href='/pod/perlfaq6'>perlfaq6</a> |
-              <a href='/pod/perluniprops'>perluniprops</a>
-            ]
-        <nav>
-      </header>
-    </article>
+    <article><div class="top-right-nav">
+      <header><div class="row">
+        <nav> <div class="nav-bar-main float-right">
+            <ul id="navigation-bar">
+              <li class="nav-item"><a href='/'>The Perl Regex Tester</a></li>
+              <li class="nav-item"><a href='/pod/perlre'>perlre</a></li>
+              <li class="nav-item"><a href='/pod/perlrequick'>perlrequick</a></li>
+              <li class="nav-item"><a href='/pod/perlretut'>perlretut</a></li>
+              <li class="nav-item"><a href='/pod/perlreref'>perlreref</a></li>
+              <li class="nav-item"><a href='/pod/perlrecharclass'>perlrecharclass</a></li>
+              <li class="nav-item"><a href='/pod/perlop'>perlop</a></li>
+              <li class="nav-item"><a href='/pod/perlfaq6'>perlfaq6</a></li>
+              <li class="nav-item"><a href='/pod/perluniprops'>perluniprops</a></li>
+            </ul>
+        </div></nav>
+      </div></header>
+    </div></article>
     <%= content %>
     <footer>
       <p>
