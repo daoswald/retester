@@ -20,14 +20,9 @@ app->defaults( +{   # Disambiguation: Anonymous hash.
 
 app->defaults( nav_bar_items => [
     [ q{/}                      => 'The Perl Regex Tester'  ],
-    [ q{/pod/perlre}            => 'perlre'                 ],
-    [ q{/pod/perlrequick}       => 'perlrequick'            ],
-    [ q{/pod/perlretut}         => 'perlretut'              ],
-    [ q{/pod/perlreref}         => 'perlreref'              ],
-    [ q{/pod/perlrecharclass}   => 'perlrecharclass'        ],
-    [ q{/pod/perlop}            => 'perlop'                 ],
-    [ q{/pod/perlfaq6}          => 'perlfaq6'               ],
-    [ q{/pod/perluniprops}      => 'perluniprops'           ],
+    map { [ "/pod/$_" => $_ ] } qw( perlre      perlrequick     perlretut
+                                    perlreref   perlrecharclass perlop
+                                    perlfaq6    perluniprops                ),
 ] );
 
 plugin 'PoweredBy';
@@ -43,7 +38,7 @@ post q{/} => sub {
         match_success => $re->do_match( $self->param('target') )
     );
     $self->stash( match_rv => $re->match_rv ? $re->match_rv : undef );
-    $self->stash( +{ map { $_ => $re->$_ } @match_stats } );
+    $self->stash( +{  map { $_ => $re->$_ } @match_stats  } );
     $self->render('index');
 };
 
@@ -55,6 +50,11 @@ get q{/} => sub {
 get q{/pod/:poddoc} => sub {
     my $self = shift;
     $self->render( template => 'pod' );
+};
+
+any q{/*}   => sub {
+    my $self = shift;
+    $self->render( 'index' );
 };
 
 app->start;
