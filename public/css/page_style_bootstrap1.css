@@ -85,14 +85,14 @@ table.timeline th {
 	float:right;
 }
 .float-captures {
-    position:relative;
-    left:450px;
-    top:-549px;
+    position:absolute;
+    left:550px;
+    top:133px;
 }
 .float-match {
-    position:relative;
-    left:275px;
-    top:-230px;
+    position:absolute;
+    left:270px;
+    top:425px;
 }
 .right-align {
 	text-align: right;
