@@ -1,8 +1,6 @@
 #!/usr/bin/env perl
 
-use strict;             # <-- Implicit with use Mojolicious::Lite.
-use warnings;           # <-- Implicit with use Mojolicious::Lite.
-use Mojolicious::Lite;
+use Mojolicious::Lite;  # strict and warnings are implicit with Mojolicious.
 use utf8;
 use feature qw( unicode_strings );
 use lib 'lib';
@@ -28,8 +26,9 @@ app->defaults( nav_bar_items => [
 plugin 'PoweredBy';
 plugin 'PODRenderer';
 
-post q{/} => sub {
+any q{/} => sub {
     my $self = shift;
+    return $self->render('index') if ! length $self->param('regexp');
     my $re = SafeMatchStats->new( {
             regex     => $self->param('regexp'),
             modifiers => $self->param('modifiers') || q{}
@@ -39,11 +38,6 @@ post q{/} => sub {
     );
     $self->stash( match_rv => $re->match_rv ? $re->match_rv : undef );
     $self->stash( +{  map { $_ => $re->$_ } @match_stats  } );
-    $self->render('index');
-};
-
-get q{/} => sub {
-    my $self = shift;
     $self->render('index');
 };
 
@@ -120,6 +114,11 @@ __DATA__
 %== '<h2>Match!</h2>' if $match_success
 %== '<h2>No match!</h2>' if defined $match_success && ! $match_success
 %== '<h2>Invalid regular expression!</h2>' if param('regexp') && ! defined $match_success
+<%== '<a href=' . url_for('/')->query( target => param('target'),
+                                       regexp => param('regexp'),
+                                       modifiers => param('modifiers') )
+                . '>Link to this test</a>'
+        if length param('regexp') =%>
 </article>
 <% if( $match_success ) {
     local $" = ',';
@@ -188,10 +187,10 @@ __DATA__
 <!DOCTYPE html>
 <html>
   <head>
-    %= stylesheet '/bootstrap/css/bootstrap.css'
-    %= stylesheet '/bootstrap/css/bootstrap-responsive.css'
+    %= stylesheet '/bootstrap/css/bootstrap.min.css'
+    %= stylesheet '/bootstrap/css/bootstrap-responsive.min.css'
     %= stylesheet '/css/page_style_bootstrap1.css'
-    %= javascript '/bootstrap/js/bootstrap.js'
+    %= javascript '/bootstrap/js/bootstrap.min.js'
     <title><%= title %></title>
   </head>
   <body>
