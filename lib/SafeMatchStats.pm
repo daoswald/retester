@@ -16,12 +16,14 @@ our $VERSION = 0.01;
 use constant ALARM_TIMEOUT    => 2;
 use constant ALARM_RESET      => 0;
 use constant MAX_DEBUG_LENGTH => 16384;
+use constant MAX_QUANTIFIERS  => 25;
 
 has regex => ( is => 'ro', required => 1 );    # User input (constructor).
 has modifiers => ( is => 'ro' );               # User input (constructor).
 has g_modifier => ( is => 'ro', lazy => 1, builder => '_has_g_modifier' );
 has regexp_str => ( is => 'ro', lazy => 1, builder => '_gen_re_string' );
 has regexp_obj => ( is => 'ro', lazy => 1, builder => '_safe_qr' );
+has bad_regex  => ( is => 'rw' );
 has target     => ( is => 'rw', lazy => 1, default => sub { q{} } );
 has _capture_dump => ( is => 'rw' );
 has matched       => ( is => 'rw', default => sub { undef } );
@@ -55,6 +57,7 @@ sub do_match {
 
 sub _gen_re_string {
     my $self    = shift;
+    $self->bad_regex(0);
     my $re_str  = $self->_sanitize_re_string( $self->regex );
     my $mod_str = $self->_sanitize_re_modifiers( $self->modifiers );
     return "(?$mod_str:$re_str)";
@@ -63,6 +66,13 @@ sub _gen_re_string {
 sub _sanitize_re_string {
     my ( $self, $re_string ) = @_;
     no warnings 'qw';    ## no critic(warnings)
+    my $count = 0;
+    $count++ while $re_string =~ /(?<!\\)(?:[*+]|\{\d,\d*\})/g;
+    if( $count > MAX_QUANTIFIERS ) {
+        $self->bad_regex(1);
+        warn "Bad bad!\n";
+        return '[1-0]Disallowed regex pattern';
+    }
     my @bad_varnames = qw%    \$\^\w         \@ENV             \$ENV
       \$[0<>#!+-]    \$\{[\w<>+^-]}    \@\{\w+}     %;
     $re_string =~ s/(?<!\\)($_)/\\$1/gxsm foreach @bad_varnames;
@@ -86,10 +96,14 @@ sub _sanitize_re_modifiers {
 
 sub _safe_qr {
     my $self        = shift;
+    return if $self->bad_regex;
     my $compartment = Safe->new;
     ${ $compartment->varglob('regexp') } = $self->regexp_str;
     my $re_obj = $compartment->reval('my $safe_reg = qr/$regexp/;');
-    return if $@;    # Return "undef" if 'reval' caught an exception.
+    if( $@ ) {
+        $self->bad_regex(1);
+        return; # Return "undef" if 'reval' caught an exception.
+    }
     return $re_obj;  # Otherwise return a regexp object.
 }
 
@@ -99,7 +113,9 @@ sub _safe_match_gather {
     my $re_obj = $self->regexp_obj;
 
     # Can't do a match if the regexp didn't compile.
-    return $self->matched(undef) if index( ref($re_obj), 'Regex' ) < 0;
+    
+    return $self->matched(undef) 
+        if index( ref($re_obj), 'Regex' ) < 0 || $self->bad_regex;
     $self->matched(0);
     try {
         alarm ALARM_TIMEOUT;
@@ -143,7 +159,7 @@ sub _safe_match_gather {
 sub _debug_info {
     my $self = shift;
     return 'Invalid regular expression.'
-      if index( ref( $self->regexp_obj ), 'Regex' ) < 0;
+      if index( ref( $self->regexp_obj ), 'Regex' ) < 0 || $self->bad_regex;
     my ( $rv, @rv );
     my $stderr;
     try {
