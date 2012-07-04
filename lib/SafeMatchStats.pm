@@ -13,8 +13,9 @@ use Carp;
 
 our $VERSION = 0.01;
 
-use constant ALARM_TIMEOUT => 3;
-use constant ALARM_RESET   => 0;
+use constant ALARM_TIMEOUT    => 2;
+use constant ALARM_RESET      => 0;
+use constant MAX_DEBUG_LENGTH => 16384;
 
 has regex => ( is => 'ro', required => 1 );    # User input (constructor).
 has modifiers => ( is => 'ro' );               # User input (constructor).
@@ -103,7 +104,6 @@ sub _safe_match_gather {
     try {
         alarm ALARM_TIMEOUT;
         my @match_rv;
-
         # Using logical short circuit operators because we can't have our
         # special match variables falling out of an if(){} block scope.
         $self->g_modifier
@@ -112,7 +112,6 @@ sub _safe_match_gather {
         !$self->g_modifier
           && $target =~ m/$re_obj/
           && $self->matched(1);
-        alarm ALARM_RESET;
         if ( $self->matched ) {
             $self->_capture_dump(
                 {
@@ -131,10 +130,12 @@ sub _safe_match_gather {
                 }
             );
         }
+        alarm ALARM_RESET;
     }
     catch {
         $self->matched(undef);
         carp "Match threw an exception: $_";
+        alarm ALARM_RESET;
     };
     return $self->matched;
 }
@@ -144,24 +145,35 @@ sub _debug_info {
     return 'Invalid regular expression.'
       if index( ref( $self->regexp_obj ), 'Regex' ) < 0;
     my ( $rv, @rv );
-    my ( undef, $stderr, undef ) = capture {
-        try {
-            alarm ALARM_TIMEOUT;
-            use re q/debug/;
-            my $regex = $self->regexp_str;
-            if ( $self->g_modifier ) {
-                @rv = $self->target =~ m/$regex/g;
+    my $stderr;
+    try {
+        alarm ALARM_TIMEOUT ;
+        ( undef, $stderr, undef ) = capture {
+            try {
+                use re q/debug/;
+                my $regex = $self->regexp_str;
+                if ( $self->g_modifier ) {
+                    @rv = $self->target =~ m/$regex/g;
+                }
+                else {
+                    $rv = $self->target =~ m/$regex/;
+                }
             }
-            else {
-                $rv = $self->target =~ m/$regex/;
-            }
-            alarm ALARM_RESET;
-        }
-        catch {
-            print STDERR 'Exception thrown during debug: ',
-              _remove_diag_linenums($_), "\n";
+            catch {
+                print STDERR 'Exception thrown during debug: ',
+                  _remove_diag_linenums($_), "\n";
+            };
         };
+        alarm ALARM_RESET ;
+    } 
+    catch { 
+        carp $_;
+        alarm ALARM_RESET ;
     };
+    if( length $stderr > MAX_DEBUG_LENGTH ) {
+        $stderr = substr( $stderr, 0, MAX_DEBUG_LENGTH ) 
+        . "\n<<< Output Truncated. >>>\n";
+    }
     return $stderr;
 }
 
