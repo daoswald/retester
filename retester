@@ -70,7 +70,7 @@ __DATA__
     Target string:
     <br />
     <%= text_area 'target', cols        => 79, rows => 5,
-                            placeholder => 'Target string',
+        #                    placeholder => 'Target string',
                             maxlength   => 2048,
                             title       => 'Enter a string to be targeted in the pattern match.'
     =%>
@@ -80,7 +80,7 @@ __DATA__
     <br />
     <%=
       text_area 'regexp', cols        => 79, rows => 5,
-                          placeholder => 'Regular Expression',
+      #                    placeholder => 'Regular Expression',
                           maxlength   => 2048,
                           title       => 'Enter a valid Perl regular expression.  Delimeters aren\'t necessary.'
     =%>
