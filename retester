@@ -167,7 +167,7 @@ __DATA__
 % }
 
 % if( defined $debug_info ) { 
-    <article>
+    <article class="float-debug">
       <h3>Debug Info:</h3>
       <pre><%= $debug_info =%></pre>
     </article>

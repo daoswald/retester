@@ -13,6 +13,7 @@ use Carp;
 
 our $VERSION = 0.01;
 
+# Paranoia limits
 use constant ALARM_TIMEOUT    => 2;
 use constant ALARM_RESET      => 0;
 use constant MAX_DEBUG_LENGTH => 16384;

@@ -88,11 +88,19 @@ table.timeline th {
     position:absolute;
     left:550px;
     top:133px;
+    max-height:50%;
+    max-width:50%;
+    overflow:auto;
 }
 .float-match {
     position:absolute;
     left:270px;
     top:425px;
+}
+.float-debug {
+    max-width:100%;
+    max-height:500px;
+    overflow:auto;
 }
 .right-align {
 	text-align: right;
