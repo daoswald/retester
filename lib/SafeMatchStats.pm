@@ -16,7 +16,7 @@ our $VERSION = 0.01;
 use constant ALARM_TIMEOUT    => 2;
 use constant ALARM_RESET      => 0;
 use constant MAX_DEBUG_LENGTH => 16384;
-use constant MAX_QUANTIFIERS  => 25;
+use constant MAX_QUANTIFIERS  => 30;
 
 has regex => ( is => 'ro', required => 1 );    # User input (constructor).
 has modifiers => ( is => 'ro' );               # User input (constructor).
