@@ -19,8 +19,9 @@ app->defaults( +{   # Disambiguation: Anonymous hash.
 app->defaults( nav_bar_items => [
     [ q{/}                      => 'The Perl Regex Tester'  ],
     map { [ "/pod/$_" => $_ ] } qw( perlre      perlrequick     perlretut
-                                    perlreref   perlrecharclass perlop
-                                    perlfaq6    perluniprops                ),
+                                    perlreref   perlrecharclass perlrebackslash
+                                    perlop      perlfaq6    perluniprops                
+    ),
 ] );
 
 plugin 'PoweredBy';
