@@ -91,9 +91,15 @@ table.timeline th {
 }
 .float-match {
     position:absolute;
-    left:270px;
-    top:425px;
+    left:200px;
+    top:640px;
 }
+.float-debug {
+    position:absolute;
+    float:float-left;
+    top:750px;
+}
+
 .right-align {
 	text-align: right;
 }
