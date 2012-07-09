@@ -19,8 +19,9 @@ app->defaults( +{   # Disambiguation: Anonymous hash.
 app->defaults( nav_bar_items => [
     [ q{/}                      => 'The Perl Regex Tester'  ],
     map { [ "/pod/$_" => $_ ] } qw( perlre      perlrequick     perlretut
-                                    perlreref   perlrecharclass perlop
-                                    perlfaq6    perluniprops                ),
+                                    perlreref   perlrecharclass perlrebackslash
+                                    perlop      perlfaq6    perluniprops                
+    ),
 ] );
 
 plugin 'PoweredBy';
@@ -58,18 +59,21 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'Perl Regex Tester';
-<h1 class="page-header"><%= title =%></h1>
+<h1 class="page-header">
+  <%= title =%>
+</h1>
 <h3>
-    Test Perl regular expressions against target strings.
+  Test Perl regular expressions against target strings.
 </h3>
 <p>
-    The regexp engine used is compatible with Perl <%= " $^V" =%>.
+  The regexp engine used is compatible with Perl <%= " $^V" =%>.
 </p>
 %= form_for '/' => ( method => 'post', class => 'well span5' ) => begin
   <p>
     Target string:
     <br />
-    <%= text_area 'target', cols        => 80, rows => 5,
+    <%= text_area 'target' => 'Just another Perl hacker,',
+                            cols        => 80, rows => 5,
                             class       => 'span4',
                             maxlength   => 2048,
                             title       => 'Enter a string to be targeted in the pattern match.'
@@ -78,8 +82,8 @@ __DATA__
   <p>
     Regular Expression:
     <br />
-    <%=
-      text_area 'regexp', cols        => 80, rows => 5,
+    <%= text_area 'regexp' => '\s(\w{4})\b',
+                          cols        => 80, rows => 5,
                           class       => 'span4',
                           maxlength   => 2048,
                           title       => 'Enter a valid Perl regular expression.  Delimeters aren\'t necessary.'
@@ -108,7 +112,11 @@ __DATA__
         match variables.
       </small>
   </p>
-  <p><h1>&nbsp;</h1></p>
+  <p>
+    <h1>
+      &nbsp;
+    </h1>
+  </p>
 %end
 
 <article class="float-match float-right span5">
@@ -118,11 +126,11 @@ __DATA__
 <%== '<a href=' . url_for('/')->query( target => param('target'),
                                        regexp => param('regexp'),
                                        modifiers => param('modifiers') )
-                . '>Link to this test</a>'
+     . '>Link to this test</a>'
         if length param('regexp') =%>
 </article>
 <% if( $match_success ) {
-    local $" = ',';
+  local $" = ',';
 =%>
   <article class="float-captures float-right span6">
     <h3>Capture variables:</h3>
@@ -195,22 +203,34 @@ __DATA__
     <title><%= title %></title>
   </head>
   <body>
-    <article><div class="top-right-nav">
-      <header><div class="row">
-        <nav> <div class="nav-bar-main float-right">
-            <ul id="navigation-bar">
-              % foreach my $item ( @{$nav_bar_items} ) {
-                <li class="nav-item"><a href='<%=$item->[0]=%>'><%=$item->[1]=%></a></li>
-              % }
-            </ul>
-        </div></nav>
-      </div></header>
-    </div></article>
-    <%= content %>
-    <footer>
+    <article class="main">
+      <article>
+        <div class="top-right-nav">
+          <header>
+            <div class="row">
+              <nav>
+                <div class="nav-bar-main float-right">
+                  <ul id="navigation-bar">
+                    % foreach my $item ( @{$nav_bar_items} ) {
+                      <li class="nav-item"><a href='<%=$item->[0]=%>'>
+                        <%=$item->[1]=%></a>
+                      </li>
+                    % }
+                  </ul>
+                </div>
+              </nav>
+            </div>
+          </header>
+        </div>
+      </article>
+      <%= content %>
+    </article>
+    <footer class='footer-bottom'>
       <p>
-        ©2012 - David Oswald.  Powered by Perl with a tasty serving of
-        Mojolicious.
+        ©2012 - David Oswald.
+      </p>
+      <p>
+        Powered by Perl and Mojolicious.
       </p>
     </footer>
   </body>

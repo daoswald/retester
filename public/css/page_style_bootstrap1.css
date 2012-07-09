@@ -88,6 +88,9 @@ table.timeline th {
     position:absolute;
     left:550px;
     top:133px;
+    max-height:50%;
+    max-width:60%;
+    overflow:auto;
 }
 .float-match {
     position:absolute;
@@ -97,9 +100,20 @@ table.timeline th {
 .float-debug {
     position:absolute;
     float:float-left;
-    top:750px;
+    top:745px;
+    max-width:100%;
+    max-height:500px;
+    margin-right:25px;
+    margin-bottom:25px;
+    overflow:auto;
 }
-
+.footer-bottom {
+    position:absolute;
+    top:630px;
+    left:1100px;
+    max-width:250px;
+    max-height:80px;
+}
 .right-align {
 	text-align: right;
 }
@@ -184,6 +198,7 @@ border-left: none;
 /* footer
 ----------------------------------------------------------------------------------------------------*/
 footer {
+    position:absolute;
 	background: #DDD;
     background: rgba(0, 0, 0, .05);
     border: 1px solid #CCC;
