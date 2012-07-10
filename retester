@@ -17,7 +17,7 @@ app->defaults( +{   # Disambiguation: Anonymous hash.
 } );    # Instantiate some defaults in the stash; makes for simpler templates.
 
 app->defaults( nav_bar_items => [
-    [ q{/}                      => 'Home'  ],
+    [ q{/} => 'Home'  ],
     map { [ "/pod/$_" => $_ ] } qw( perlre      perlrequick     perlretut
                                     perlreref   perlrecharclass perlrebackslash
                                     perlop      perlfaq6    perluniprops                
@@ -59,9 +59,11 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'Perl Regex Tester';
-<h1>
-  <%= title =%>
-</h1>
+<!--
+  <h1>
+    <%= title =%>
+  </h1>
+-->
 <h3>
   Test Perl regular expressions against target strings.
 </h3>
@@ -72,44 +74,49 @@ __DATA__
   <p>
     Target string:
     <br />
-    <%= text_area 'target' => 'Just another Perl hacker,',
-                            cols        => 80, rows => 5,
-                            class       => 'span4',
-                            maxlength   => 2048,
-                            title       => 'Enter a string to be targeted in the pattern match.'
+    <%= text_area target    => 'Just another Perl hacker,',
+                  cols      => 80,
+                  rows      => 5,
+                  class     => 'span4',
+                  maxlength => 2048,
+                  title     =>
+                    'Enter a string to be targeted in the pattern match.'
     =%>
   </p>
   <p>
     Regular Expression:
     <br />
-    <%= text_area 'regexp' => '\s(\w{4})\b',
-                          cols        => 80, rows => 5,
-                          class       => 'span4',
-                          maxlength   => 2048,
-                          title       => 'Enter a valid Perl regular expression.  Delimeters aren\'t necessary.'
+    <%= text_area regexp    => '\s(\w{4})\b',
+                  cols      => 80,
+                  rows      => 5,
+                  class     => 'span4',
+                  maxlength => 2048,
+                  title     =>
+                    'Enter a valid Perl regular expression.  Delimeters aren\'t necessary.'
     =%>
     <br />
-      <small>
-        Example: To test "<code>m/pattern/</code>", enter
-        "<code>pattern</code>" (without quotes).
-      </small>
+    <small>
+      Example: To test "<code>m/pattern/</code>", enter
+      "<code>pattern</code>" (without quotes).
+    </small>
   </p>
   <p>
     Modifiers:
     <br />
-    <%= text_field 'modifiers', cols        => '30', 
-                                placeholder => 'Valid Modifiers: [gmsixadlu]',
-                                maxlength   => '10',
-                                pattern     => '(?:[gmsixadlu^-][gmsixadlu-]{0,10})?',
-                                title       => 'Valid modifiers are from the set [gmsixadlu^-], or none at all'
+    <%= text_field modifiers    =>
+                   cols         => '30', 
+                   placeholder  => 'Valid Modifiers: [gmsixadlu]',
+                   maxlength    => '10',
+                   pattern      => '(?:[gmsixadlu^-][gmsixadlu-]{0,10})?',
+                   title        =>
+                    'Valid modifiers are from the set [gmsixadlu^-], or none at all'
     %>
     %= submit_button 'Attempt Match', class => 'btn btn-primary'
     <br />
       <small>
         Using the <code>/g</code> modifier will run match in list context.
         <br />
-        <code>/r</code> is set by default to provide access to all
-        match variables.
+        <code>/r</code> is set by default to provide access to all match variables.
       </small>
   </p>
   <p>
@@ -176,7 +183,12 @@ __DATA__
           <li>Digit Captures
             <ul>
             %  foreach my $digit ( 1 .. $#{$digits} ) {
-              %== "<li><code>\$$digit =></code> [<mark><code>$digits->[$digit]</code></mark>]</li>"
+              <%==
+                "<li>
+                  <code>\$$digit =></code>
+                  [<mark><code>$digits->[$digit]</code></mark>]
+                </li>"
+              =%>
             %  }
             </ul>
           </li>
@@ -185,7 +197,12 @@ __DATA__
           <li>Named Captures
             <ul>
               % foreach my $name ( keys %{$hash_plus} ) {
-                %== "<li>\$+{$name} => [<mark><code>$hash_plus->{$name}</code></mark>]</li>"
+                <%==
+                  "<li>
+                    \$+{$name} =>
+                    [<mark><code>$hash_plus->{$name}</code></mark>]
+                  </li>"
+                =%>
               % }
             </ul>
           </li>
@@ -233,8 +250,8 @@ __DATA__
     <title><%= title %></title>
   </head>
   <body>
-    <header>
-      <nav>
+    <header class="container">
+      <nav class="row">
         <div class="navbar navbar-fixed-top">
           <div class="navbar-inner">
             <div class="container">
@@ -248,6 +265,8 @@ __DATA__
           </div> <!-- /navbar-inner -->
         </div> <!-- /nav-bar -->
       </nav>
+    &nbsp;<br />
+    &nbsp;<br />
     </header>
     <article class="row span12">
       <%= content %>
@@ -262,3 +281,4 @@ __DATA__
     </footer>
   </body>
 </html>
+
