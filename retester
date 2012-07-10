@@ -17,7 +17,7 @@ app->defaults( +{   # Disambiguation: Anonymous hash.
 } );    # Instantiate some defaults in the stash; makes for simpler templates.
 
 app->defaults( nav_bar_items => [
-    [ q{/}                      => 'The Perl Regex Tester'  ],
+    [ q{/}                      => 'Home'  ],
     map { [ "/pod/$_" => $_ ] } qw( perlre      perlrequick     perlretut
                                     perlreref   perlrecharclass perlrebackslash
                                     perlop      perlfaq6    perluniprops                
@@ -59,7 +59,7 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'Perl Regex Tester';
-<h1 class="page-header">
+<h1>
   <%= title =%>
 </h1>
 <h3>
@@ -117,23 +117,51 @@ __DATA__
       &nbsp;
     </h1>
   </p>
+  <div class="float-right span4">
+    <%==
+      '<div class = "alert alert-success">
+        <h2 class="alert-heading">
+          Match!
+        </h2>
+        Check the "Capture variables" and "Debug info" sections for more info.
+      </div>'
+          if $match_success
+    =%>
+    <%==
+      '<div class = "alert alert-warning">
+        <h2 class="alert-heading">
+          No match!
+        </h2>
+        Check the "Debug info" section to see why.
+      </div>'
+          if defined $match_success && ! $match_success
+    =%>
+    <%==
+      '<div class= "alert alert-error">
+        <h2 class="alert-heading">
+          Invalid regular expression!
+        </h2>
+        The syntax of your regular expression wasn\'t valid.
+      </div>'
+          if param('regexp') && ! defined $match_success
+    =%>
+    <%==
+        '<a href=' . url_for('/')->query( target => param('target'),
+                                          regexp => param('regexp'),
+                                          modifiers => param('modifiers') )
+        . '>Link to this test</a>'
+            if length param('regexp')
+    =%>
+  </div>
 %end
 
-<article class="float-match float-right span5">
-%== '<h2>Match!</h2>' if $match_success
-%== '<h2>No match!</h2>' if defined $match_success && ! $match_success
-%== '<h2>Invalid regular expression!</h2>' if param('regexp') && ! defined $match_success
-<%== '<a href=' . url_for('/')->query( target => param('target'),
-                                       regexp => param('regexp'),
-                                       modifiers => param('modifiers') )
-     . '>Link to this test</a>'
-        if length param('regexp') =%>
-</article>
-<% if( $match_success ) {
-  local $" = ',';
+<%
+  if( $match_success ) {
+    local $" = ',';
 =%>
-  <article class="float-captures float-right span6">
-    <h3>Capture variables:</h3>
+  <article class="float-right span6">
+    <div class="well">
+      <h3>Capture variables:</h3>
       <ul>
         %  if( $g_modifier ) {
           <li>List Context Return Values
@@ -171,12 +199,13 @@ __DATA__
         % }
         %== @{$array_minus} && "<li><code>\@- => </code>(<code>@{$array_minus}</code>)</li>"
         %== @{$array_plus}  && "<li><code>\@+ => </code>(<code>@{$array_plus}</code>)</li>"
-    </ul>
+      </ul>
+    </div>
   </article>
 % }
 
 % if( defined $debug_info ) { 
-    <article class='float-left float-debug'>
+    <article class='span6 pre-scrollable'>
       <h3>Debug Info:</h3>
       <pre><%= $debug_info =%></pre>
     </article>
@@ -194,8 +223,9 @@ __DATA__
 
 @@ layouts/default.html.ep
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
     %= stylesheet '/bootstrap/css/bootstrap.min.css'
     %= stylesheet '/bootstrap/css/bootstrap-responsive.min.css'
     %= stylesheet '/css/page_style_bootstrap1.css'
@@ -203,29 +233,26 @@ __DATA__
     <title><%= title %></title>
   </head>
   <body>
-    <article class="main">
-      <article>
-        <div class="top-right-nav">
-          <header>
-            <div class="row">
-              <nav>
-                <div class="nav-bar-main float-right">
-                  <ul id="navigation-bar">
-                    % foreach my $item ( @{$nav_bar_items} ) {
-                      <li class="nav-item"><a href='<%=$item->[0]=%>'>
-                        <%=$item->[1]=%></a>
-                      </li>
-                    % }
-                  </ul>
-                </div>
-              </nav>
-            </div>
-          </header>
-        </div>
-      </article>
+    <header>
+      <nav>
+        <div class="navbar navbar-fixed-top">
+          <div class="navbar-inner">
+            <div class="container">
+              <a class="brand" href="/">The Perl Regex Tester</a>
+              <ul class="nav">
+                % foreach my $item ( @{$nav_bar_items} ) {
+                    <li><a href='<%=$item->[0]=%>'><%=$item->[1]=%></a></li>
+                % }
+              </ul>
+            </div> <!-- /container -->
+          </div> <!-- /navbar-inner -->
+        </div> <!-- /nav-bar -->
+      </nav>
+    </header>
+    <article class="row span12">
       <%= content %>
     </article>
-    <footer class='footer-bottom'>
+    <footer class="row span12">
       <p>
         ©2012 - David Oswald.
       </p>
