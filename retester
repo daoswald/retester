@@ -24,17 +24,9 @@ app->defaults(
 
 any q{/} => sub {
     my $self = shift;
-    my @match_stats = qw(               match_rv        debug_info  g_modifier
-        prematch        match           postmatch       carat_n     digits
-        array_minus     array_plus      hash_minus      hash_plus             );
-    if( !length $self->param('regexp') ) {
-        $self->stash(
-            {
-                map { $_ => undef } 'match_success', @match_stats
-            }
-        );
-        return $self->render('index');
-    }
+    $self->stash( { re_obj => undef, match_success => undef } );
+    return $self->render('index')
+        if !length $self->param('regexp');
     my $re = SafeMatchStats->new(
         {
             regex     => $self->param('regexp'),
@@ -42,8 +34,7 @@ any q{/} => sub {
         }
     );
     $self->stash( match_success => $re->do_match( $self->param('target') ) );
-#    $self->stash( match_rv => $re->match_rv || undef );
-    $self->stash( { map { $_ => $re->$_ } @match_stats } );
+    $self->stash( re_obj => $re );
     $self->render('index');
 };
 
@@ -155,7 +146,7 @@ __DATA__
         <h2 class="alert-heading">
           Invalid regular expression!
         </h2>
-        The syntax of your regular expression wasn\'t valid.
+        Please check your regular expression syntax.
       </div>'
           if param('regexp') && ! defined $match_success
     =%>
@@ -177,61 +168,73 @@ __DATA__
     <div class="well">
       <h3>Capture variables:</h3>
       <ul>
-        %  if( $g_modifier ) {
+        %  if( $re_obj->g_modifier ) {
           <li>List Context Return Values
             <ul>
-            %  foreach my $rv ( @{$match_rv} ) {
+            %  foreach my $rv ( @{$re_obj->match_rv} ) {
               %== "<li>[<mark><code>$rv</code></mark>]</li>"
             %  }
             </ul>
           </li>
         %  }
-        %  if( @{$digits} > 1 ) {
+        %  if( @{$re_obj->digits} > 1 ) {
           <li>Digit Captures
             <ul>
-            %  foreach my $digit ( 1 .. $#{$digits} ) {
+            %  foreach my $digit ( 1 .. $#{$re_obj->digits} ) {
               <%==
-                "<li>
-                  <code>\$$digit =></code>
-                  [<mark><code>$digits->[$digit]</code></mark>]
-                </li>"
+                "<li><code>\$$digit =></code>[<mark><code>"
+                . $re_obj->digits->[$digit] . "</code></mark>]</li>"
               =%>
             %  }
             </ul>
           </li>
         % }
-        % if( keys %{$hash_plus} ) {
+        % if( keys %{$re_obj->hash_plus} ) {
           <li>Named Captures
             <ul>
-              % foreach my $name ( keys %{$hash_plus} ) {
+              % foreach my $name ( keys %{$re_obj->hash_plus} ) {
                 <%==
-                  "<li>
-                    \$+{$name} =>
-                    [<mark><code>$hash_plus->{$name}</code></mark>]
-                  </li>"
+                  "<li>\$+{$name} =>[<mark><code>"
+                  . $re_obj->hash_plus->{$name} . "</code></mark>]</li>"
                 =%>
               % }
             </ul>
           </li>
         % }
-        %== defined $prematch  && "<li><code>\${^PREMATCH} =></code> [<mark><code>$prematch</code></mark>]</li>"
-        %== defined $match     && "<li><code>\${^MATCH} =></code> [<mark><code>$match</code></mark>]</li>"
-        %== defined $postmatch && "<li><code>\${^POSTMATCH} =></code> [<mark><code>$postmatch</code></mark>]</li>"
-        %== defined $carat_n   && "<li><code>\$^N =></code> [<mark><code>$carat_n</code></mark>]</li>"
-        % foreach my $name ( keys %{$hash_minus} ) {
-          %== "<li><code>\$-{$name} => (@{$hash_minus->{$name}})</code></li>"
+        <%== defined $re_obj->prematch
+               &&
+               "<li><code>\${^PREMATCH} =></code> [<mark><code>"
+               . $re_obj->prematch  . "</code></mark>]</li>"
+        =%>
+        <%== defined $re_obj->match     && "<li><code>\${^MATCH} =></code> [<mark><code>"
+               . $re_obj->match     . "</code></mark>]</li>"
+        =%>
+        <%== defined $re_obj->postmatch && "<li><code>\${^POSTMATCH} =></code> [<mark><code>"
+               . $re_obj->postmatch . "</code></mark>]</li>"
+        =%>
+        <%== defined $re_obj->carat_n   && "<li><code>\$^N =></code> [<mark><code>"
+               . $re_obj->carat_n   . "</code></mark>]</li>"
+        =%>
+        % foreach my $name ( keys %{$re_obj->hash_minus} ) {
+          <%== "<li><code>\$-{$name} =></code>
+            (<code>@{$re_obj->hash_minus->{$name}}</code>)</li>"
+          =%>
         % }
-        %== @{$array_minus} && "<li><code>\@- => </code>(<code>@{$array_minus}</code>)</li>"
-        %== @{$array_plus}  && "<li><code>\@+ => </code>(<code>@{$array_plus}</code>)</li>"
+        <%== @{$re_obj->array_minus} && "<li><code>\@- => </code>
+               (<code>@{$re_obj->array_minus}</code>)</li>"
+        =%>
+        <%== @{$re_obj->array_plus}  && "<li><code>\@+ => </code>
+               (<code>@{$re_obj->array_plus}</code>)</li>"
+        =%>
       </ul>
     </div>
   </article>
 % }
 
-% if( defined $debug_info ) { 
+% if( defined $match_success && defined $re_obj->debug_info ) { 
     <article class='span6 pre-scrollable'>
       <h3>Debug Info:</h3>
-      <pre><%= $debug_info =%></pre>
+      <pre><%= $re_obj->debug_info =%></pre>
     </article>
 % }
 
