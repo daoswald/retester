@@ -114,49 +114,45 @@ __DATA__
       <small>
         Using the <code>/g</code> modifier will run match in list context.
         <br />
-        <code>/r</code> is set by default to provide access to all match variables.
+        <code>/r</code> is set by default to enable access to all match variables.
       </small>
   </p>
   <p>
     <h1>
-      &nbsp;
+      &nbsp; <!-- Oh, the guilt and shame! -->
     </h1>
   </p>
   <div class="float-right span4">
-    <%==
-      '<div class = "alert alert-success">
-        <h2 class="alert-heading">
-          Match!
-        </h2>
-        Check the "Capture variables" and "Debug info" sections for more info.
-      </div>'
-          if $match_success
-    =%>
-    <%==
-      '<div class = "alert alert-warning">
-        <h2 class="alert-heading">
-          No match!
-        </h2>
-        Check the "Debug info" section to see why.
-      </div>'
-          if defined $match_success && ! $match_success
-    =%>
-    <%==
-      '<div class= "alert alert-error">
-        <h2 class="alert-heading">
-          Invalid regular expression!
-        </h2>
-        Please check your regular expression syntax.
-      </div>'
-          if param('regexp') && ! defined $match_success
-    =%>
-    <%==
-        '<a href=' . url_for('/')->query( target => param('target'),
-                                          regexp => param('regexp'),
-                                          modifiers => param('modifiers') )
-        . '>Link to this test</a>'
-            if length param('regexp')
-    =%>
+    % if( $match_success ) {
+       <div class = "alert alert-success">
+         <h2 class="alert-heading">
+           Match!
+         </h2>
+         Check the "Capture variables" and "Debug info" sections for more info.
+       </div>
+    % }
+    % if( defined $match_success && ! $match_success ) {
+       <div class = "alert alert-warning">
+         <h2 class="alert-heading">
+           No match!
+         </h2>
+         Check the "Debug info" section to see why.
+       </div> 
+    % }
+    % if( param('regexp') && ! defined $match_success ) {
+       <div class= "alert alert-error">
+         <h2 class="alert-heading">
+           Invalid regular expression!
+         </h2>
+         Please check your regular expression syntax.
+       </div> 
+    % }
+    % if( length param('regexp' ) ) {
+        <a href="<%== url_for('/')->query(
+                      target => param('target'), regexp => param('regexp'),
+                      modifiers => param('modifiers')                      )
+        =%>">Link to this test</a>
+    % }
   </div>
 %end
 
@@ -172,7 +168,7 @@ __DATA__
           <li>List Context Return Values
             <ul>
             %  foreach my $rv ( @{$re_obj->match_rv} ) {
-              %== "<li>[<mark><code>$rv</code></mark>]</li>"
+              <li>[<mark><code><%== $rv =%></code></mark>]</li>
             %  }
             </ul>
           </li>
@@ -181,10 +177,10 @@ __DATA__
           <li>Digit Captures
             <ul>
             %  foreach my $digit ( 1 .. $#{$re_obj->digits} ) {
-              <%==
-                "<li><code>\$$digit =></code>[<mark><code>"
-                . $re_obj->digits->[$digit] . "</code></mark>]</li>"
-              =%>
+                <li>
+                    <code>$<%== $digit =%> =></code>
+                    [<mark><code><%== $re_obj->digits->[$digit] =%></code></mark>]
+                </li>
             %  }
             </ul>
           </li>
@@ -193,39 +189,56 @@ __DATA__
           <li>Named Captures
             <ul>
               % foreach my $name ( keys %{$re_obj->hash_plus} ) {
-                <%==
-                  "<li>\$+{$name} =>[<mark><code>"
-                  . $re_obj->hash_plus->{$name} . "</code></mark>]</li>"
-                =%>
+                  <li>
+                    \$+{<%== $name =%>} =>
+                    [<mark><code><%== $re_obj->hash_plus->{$name} =%></code></mark>]
+                  </li>
               % }
             </ul>
           </li>
         % }
-        <%== defined $re_obj->prematch
-               &&
-               "<li><code>\${^PREMATCH} =></code> [<mark><code>"
-               . $re_obj->prematch  . "</code></mark>]</li>"
-        =%>
-        <%== defined $re_obj->match     && "<li><code>\${^MATCH} =></code> [<mark><code>"
-               . $re_obj->match     . "</code></mark>]</li>"
-        =%>
-        <%== defined $re_obj->postmatch && "<li><code>\${^POSTMATCH} =></code> [<mark><code>"
-               . $re_obj->postmatch . "</code></mark>]</li>"
-        =%>
-        <%== defined $re_obj->carat_n   && "<li><code>\$^N =></code> [<mark><code>"
-               . $re_obj->carat_n   . "</code></mark>]</li>"
-        =%>
-        % foreach my $name ( keys %{$re_obj->hash_minus} ) {
-          <%== "<li><code>\$-{$name} =></code>
-            (<code>@{$re_obj->hash_minus->{$name}}</code>)</li>"
-          =%>
+        % if( defined $re_obj->prematch ) {
+            <li>
+              <code>${^PREMATCH} =></code>
+              [<mark><code><%== $re_obj->prematch =%></code></mark>]
+            </li>
         % }
-        <%== @{$re_obj->array_minus} && "<li><code>\@- => </code>
-               (<code>@{$re_obj->array_minus}</code>)</li>"
-        =%>
-        <%== @{$re_obj->array_plus}  && "<li><code>\@+ => </code>
-               (<code>@{$re_obj->array_plus}</code>)</li>"
-        =%>
+        % if( defined $re_obj->match ) {
+            <li>
+              <code>${^MATCH} =></code>
+              [<mark><code><%== $re_obj->match =%></code></mark>]
+            </li>
+        % }
+        % if( defined $re_obj->postmatch ) {
+            <li>
+              <code>${^POSTMATCH} =></code>
+              [<mark><code><%== $re_obj->postmatch =%></code></mark>]
+            </li>
+        % }
+        % if( defined $re_obj->carat_n ) {
+            <li>
+              <code>${^N} =></code>
+              [<mark><code><%== $re_obj->carat_n =%></code></mark>]
+            </li>
+        % }
+        % foreach my $name ( keys %{$re_obj->hash_minus} ) {
+            <li>
+              <code>$-{<%== $name =%>} =></code>
+              (<code><%== "@{$re_obj->hash_minus->{$name}}" =%></code>)
+            </li>
+        % }
+        % if( @{$re_obj->array_minus} ) {
+            <li>
+              <code>@- => </code>
+              (<code><%== "@{$re_obj->array_minus}" =%></code>)
+            </li>
+        % }
+        % if( @{$re_obj->array_plus} ) {
+            <li>
+              <code>@+ => </code>
+              (<code><%== "@{$re_obj->array_plus}" =%></code>)
+            </li>
+        % }
       </ul>
     </div>
   </article>
@@ -268,7 +281,9 @@ __DATA__
               <a class="brand" href="/">The Perl Regex Tester</a>
               <ul class="nav">
                 % foreach my $item ( @{$nav_bar_items} ) {
-                    <li><a href='<%=$item->[0]=%>'><%=$item->[1]=%></a></li>
+                    <li>
+                      <a href='<%= $item->[0] =%>'><%= $item->[1] =%></a>
+                    </li>
                 % }
               </ul>
             </div> <!-- /container -->
