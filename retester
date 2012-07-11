@@ -190,7 +190,7 @@ __DATA__
             <ul>
               % foreach my $name ( keys %{$re_obj->hash_plus} ) {
                   <li>
-                    \$+{<%== $name =%>} =>
+                    $+{<%== $name =%>} =>
                     [<mark><code><%== $re_obj->hash_plus->{$name} =%></code></mark>]
                   </li>
               % }
