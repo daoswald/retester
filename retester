@@ -8,13 +8,16 @@ use SafeMatchStats;
 
 app->secret('Some Session Secret'); # Unimportant: We're not using sessions.
 
+plugin 'PoweredBy';
+plugin 'PODRenderer';
+
 my @match_stats = qw( debug_info    g_modifier  prematch        match
                       postmatch     carat_n     digits          array_minus
                       array_plus    hash_minus  hash_plus                   );
 
-app->defaults( +{   # Disambiguation: Anonymous hash.
+app->defaults( +{   # Anonymous hash.
     map { $_ => undef } 'match_success', 'match_rv', @match_stats
-} );    # Instantiate some defaults in the stash; makes for simpler templates.
+} );    # Instantiate some defaults in the stash for simpler templates.
 
 app->defaults( nav_bar_items => [
     [ q{/} => 'Home'  ],
@@ -23,9 +26,6 @@ app->defaults( nav_bar_items => [
                                     perlop      perlfaq6    perluniprops                
     ),
 ] );
-
-plugin 'PoweredBy';
-plugin 'PODRenderer';
 
 any q{/} => sub {
     my $self = shift;
@@ -55,6 +55,7 @@ any q{/*}   => sub {
 app->start;
 
 __DATA__
+
 
 @@ index.html.ep
 % layout 'default';
@@ -92,7 +93,8 @@ __DATA__
                   class     => 'span4',
                   maxlength => 2048,
                   title     =>
-                    'Enter a valid Perl regular expression.  Delimeters aren\'t necessary.'
+                    'Enter a valid Perl regular expression.  '
+                    . 'Delimeters aren\'t necessary.'
     =%>
     <br />
     <small>
@@ -109,7 +111,7 @@ __DATA__
                    maxlength    => '10',
                    pattern      => '(?:[gmsixadlu^-][gmsixadlu-]{0,10})?',
                    title        =>
-                    'Valid modifiers are from the set [gmsixadlu^-], or none at all'
+                    'Valid modifiers are from the set [gmsixadlu^-], or leave empty.'
     %>
     %= submit_button 'Attempt Match', class => 'btn btn-primary'
     <br />
@@ -265,8 +267,8 @@ __DATA__
           </div> <!-- /navbar-inner -->
         </div> <!-- /nav-bar -->
       </nav>
-    &nbsp;<br />
-    &nbsp;<br />
+    <!-- v---------- It wouldn't be HTML & CSS if we didn't cheat somewhere. -->
+    &nbsp;<br /> &nbsp;<br />
     </header>
     <article class="row span12">
       <%= content %>
@@ -281,4 +283,3 @@ __DATA__
     </footer>
   </body>
 </html>
-
