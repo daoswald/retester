@@ -1,44 +1,49 @@
 #!/usr/bin/env perl
 
-use Mojolicious::Lite;  # strict and warnings are implicit with Mojolicious.
+use Mojolicious::Lite;    # strict and warnings are implicit with Mojolicious.
 use utf8;
 use feature qw( unicode_strings );
 use lib 'lib';
 use SafeMatchStats;
 
-app->secret('Some Session Secret'); # Unimportant: We're not using sessions.
+app->secret('Some Session Secret');    # Unimportant: We're not using sessions.
 
 plugin 'PoweredBy';
 plugin 'PODRenderer';
 
-my @match_stats = qw( debug_info    g_modifier  prematch        match
-                      postmatch     carat_n     digits          array_minus
-                      array_plus    hash_minus  hash_plus                   );
-
-app->defaults( +{   # Anonymous hash.
-    map { $_ => undef } 'match_success', 'match_rv', @match_stats
-} );    # Instantiate some defaults in the stash for simpler templates.
-
-app->defaults( nav_bar_items => [
-    [ q{/} => 'Home'  ],
-    map { [ "/pod/$_" => $_ ] } qw( perlre      perlrequick     perlretut
-                                    perlreref   perlrecharclass perlrebackslash
-                                    perlop      perlfaq6    perluniprops                
-    ),
-] );
+app->defaults(
+    nav_bar_items => [
+        [ q{/} => 'Home' ],
+        map { [ "/pod/$_" => $_ ] }
+          qw( perlre      perlrequick     perlretut
+          perlreref   perlrecharclass perlrebackslash
+          perlop      perlfaq6    perluniprops
+          ),
+    ]
+);
 
 any q{/} => sub {
     my $self = shift;
-    return $self->render('index') if ! length $self->param('regexp');
-    my $re = SafeMatchStats->new( {
+    my @match_stats = qw(               match_rv        debug_info  g_modifier
+        prematch        match           postmatch       carat_n     digits
+        array_minus     array_plus      hash_minus      hash_plus             );
+    if( !length $self->param('regexp') ) {
+        $self->stash(
+            {
+                map { $_ => undef } 'match_success', @match_stats
+            }
+        );
+        return $self->render('index');
+    }
+    my $re = SafeMatchStats->new(
+        {
             regex     => $self->param('regexp'),
             modifiers => $self->param('modifiers') || q{}
-    } );
-    $self->stash(
-        match_success => $re->do_match( $self->param('target') )
+        }
     );
-    $self->stash( match_rv => $re->match_rv ? $re->match_rv : undef );
-    $self->stash( +{  map { $_ => $re->$_ } @match_stats  } );
+    $self->stash( match_success => $re->do_match( $self->param('target') ) );
+#    $self->stash( match_rv => $re->match_rv || undef );
+    $self->stash( { map { $_ => $re->$_ } @match_stats } );
     $self->render('index');
 };
 
@@ -47,9 +52,9 @@ get q{/pod/:poddoc} => sub {
     $self->render( template => 'pod' );
 };
 
-any q{/*}   => sub {
+any q{/*} => sub {
     my $self = shift;
-    $self->render( 'index' );
+    $self->render('index');
 };
 
 app->start;
@@ -267,7 +272,7 @@ __DATA__
           </div> <!-- /navbar-inner -->
         </div> <!-- /nav-bar -->
       </nav>
-    <!-- v---------- It wouldn't be HTML & CSS if we didn't cheat somewhere. -->
+    <!-- v-------------- It wouldn't be HTML/CSS if we had no layout cheats. -->
     &nbsp;<br /> &nbsp;<br />
     </header>
     <article class="row span12">
