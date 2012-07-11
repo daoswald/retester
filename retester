@@ -265,7 +265,7 @@ __DATA__
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     %= stylesheet '/bootstrap/css/bootstrap.min.css'
     %= stylesheet '/bootstrap/css/bootstrap-responsive.min.css'
     %= stylesheet '/css/page_style_bootstrap1.css'
