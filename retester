@@ -90,7 +90,7 @@ __DATA__
                   maxlength => 2048,
                   title     =>
                     'Enter a valid Perl regular expression.  '
-                    . 'Delimeters aren\'t necessary.'
+                    . 'Delimiters aren\'t necessary.'
     =%>
     <br />
     <small>
