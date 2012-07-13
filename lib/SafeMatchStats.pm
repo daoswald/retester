@@ -13,14 +13,14 @@ use Carp;
 
 our $VERSION = 0.01;
 
-# Paranoia limits
+# Paranoia limits  ** Still much work to be done on DOS-crafted RE's.
 use constant ALARM_TIMEOUT    => 2;
 use constant ALARM_RESET      => 0;
 use constant MAX_DEBUG_LENGTH => 16384;
 use constant MAX_QUANTIFIERS  => 30;
 
-has regex => ( is => 'ro', required => 1 );    # User input (constructor).
-has modifiers => ( is => 'ro' );               # User input (constructor).
+has regex => ( is => 'ro', required => 1 );    # User input.
+has modifiers => ( is => 'ro' );               # User input.
 has g_modifier => ( is => 'ro', lazy => 1, builder => '_has_g_modifier' );
 has regexp_str => ( is => 'ro', lazy => 1, builder => '_gen_re_string' );
 has regexp_obj => ( is => 'ro', lazy => 1, builder => '_safe_qr' );
@@ -71,7 +71,6 @@ sub _sanitize_re_string {
     $count++ while $re_string =~ /(?<!\\)(?:[*+]|\{\d,\d*\})/g;
     if( $count > MAX_QUANTIFIERS ) {
         $self->bad_regex(1);
-        warn "Bad bad!\n";
         return '[1-0]Disallowed regex pattern';
     }
     my @bad_varnames = qw%    \$\^\w         \@ENV             \$ENV
