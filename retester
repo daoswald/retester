@@ -250,11 +250,14 @@ __DATA__
 @@ pod.html.ep
 % layout 'default';
 % title 'Documentation Browser';
-<h1><%= title =%></h1>
-<iframe src='/perldoc/<%=$poddoc=%>', 
-    seamless='seamless', width='1000', height='750'>
-</iframe>
-
+<h1>
+  <%= title =%>
+</h1>
+<div class="container">
+  <iframe src='/perldoc/<%=$poddoc=%>', 
+    seamless='seamless', height='700', class='span12' >
+  </iframe>
+</div>
 
 
 @@ layouts/default.html.ep
@@ -262,6 +265,7 @@ __DATA__
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     %= stylesheet '/bootstrap/css/bootstrap.min.css'
     %= stylesheet '/bootstrap/css/bootstrap-responsive.min.css'
     %= stylesheet '/css/page_style_bootstrap1.css'
