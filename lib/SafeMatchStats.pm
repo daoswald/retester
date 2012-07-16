@@ -149,9 +149,10 @@ sub _safe_match_gather {
         alarm ALARM_RESET;
     }
     catch {
-        $self->matched(undef);
-        carp "Match threw an exception: $_";
         alarm ALARM_RESET;
+        $self->matched(undef);
+        $self->bad_regex(1);
+        carp "Match threw an exception: $_";
     };
     return $self->matched;
 }
@@ -183,8 +184,8 @@ sub _debug_info {
         alarm ALARM_RESET ;
     } 
     catch { 
+        alarm ALARM_RESET;
         carp $_;
-        alarm ALARM_RESET ;
     };
     if( length $stderr > MAX_DEBUG_LENGTH ) {
         $stderr = substr( $stderr, 0, MAX_DEBUG_LENGTH ) 
