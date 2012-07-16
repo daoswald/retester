@@ -9,6 +9,8 @@ WriteMakefile(
         'Mojolicious'     => '3.0',
         'Try::Tiny'       => '0',
         'Capture::Tiny'   => '0',
+        'Time::HiRes'     => '0',
+        'Sys::SigAction'  => '0',
         'Safe'            => '0',
         'Carp'            => '0',
         'Moo'             => '0',

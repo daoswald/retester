@@ -8,6 +8,8 @@ use utf8;
 use feature qw( unicode_strings );
 use Try::Tiny;
 use Capture::Tiny qw( capture );
+use Sys::SigAction qw( timeout_call );
+use Time::HiRes;
 use Safe;
 use Carp;
 
@@ -15,6 +17,7 @@ our $VERSION = 0.01;
 
 # Paranoia limits  ** Still much work to be done on DOS-crafted RE's.
 use constant ALARM_TIMEOUT    => 2;
+use constant MATCH_TIMEOUT    => 1.25;
 use constant ALARM_RESET      => 0;
 use constant MAX_DEBUG_LENGTH => 16384;
 use constant MAX_QUANTIFIERS  => 30;
@@ -117,43 +120,48 @@ sub _safe_match_gather {
     return $self->matched(undef) 
         if index( ref($re_obj), 'Regex' ) < 0 || $self->bad_regex;
     $self->matched(0);
-    try {
-        alarm ALARM_TIMEOUT;
+    my $cb = sub {
         my @match_rv;
         # Using logical short circuit operators because we can't have our
         # special match variables falling out of an if(){} block scope.
-        $self->g_modifier
-          && ( (@match_rv) = $target =~ m/$re_obj/g )
-          && ( $self->matched( @match_rv ? 1 : 0 ) );
-        !$self->g_modifier
-          && $target =~ m/$re_obj/
-          && $self->matched(1);
-        if ( $self->matched ) {
-            $self->_capture_dump(
-                {
-                    digits => [
-                        map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#-
-                    ],
-                    hash_plus   => {%+},
-                    hash_minus  => {%-},
-                    prematch    => ${^PREMATCH},
-                    match       => ${^MATCH},
-                    postmatch   => ${^POSTMATCH},
-                    carat_n     => $^N,
-                    array_minus => [@-],
-                    array_plus  => [@+],
-                    match_rv    => [@match_rv],
-                }
-            );
+        try {
+            $self->g_modifier
+              && ( (@match_rv) = $target =~ m/$re_obj/g )
+              && ( $self->matched( @match_rv ? 1 : 0 ) );
+            !$self->g_modifier
+              && $target =~ m/$re_obj/
+              && $self->matched(1);
+            if ( $self->matched ) {
+                $self->_capture_dump(
+                    {
+                        digits => [
+                            map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#-
+                        ],
+                        hash_plus   => {%+},
+                        hash_minus  => {%-},
+                        prematch    => ${^PREMATCH},
+                        match       => ${^MATCH},
+                        postmatch   => ${^POSTMATCH},
+                        carat_n     => $^N,
+                        array_minus => [@-],
+                        array_plus  => [@+],
+                        match_rv    => [@match_rv],
+                    }
+                );
+            }
         }
-        alarm ALARM_RESET;
-    }
-    catch {
-        alarm ALARM_RESET;
+        catch {
+            $self->matched(undef);
+            $self->bad_regex(1);
+            carp 'Caught an exception thrown by match (possibly a timer): ' .
+                 'Disqualifying RE.';
+        };
+    };
+    if( timeout_call( MATCH_TIMEOUT, $cb ) ) {
         $self->matched(undef);
         $self->bad_regex(1);
-        carp "Match threw an exception: $_";
-    };
+        carp 'Match timed out. RE is disqualified.';
+    }
     return $self->matched;
 }
 
