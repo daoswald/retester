@@ -140,7 +140,8 @@ __DATA__
          <h2 class="alert-heading">
            Invalid regular expression!
          </h2>
-         Please check your regular expression syntax.
+         This could indicate either a syntax error, or a grossly inefficient
+         regular expression.  Check the syntax, or reduce backtracking.
        </div> 
     % }
     % if( length param('regexp' ) ) {
