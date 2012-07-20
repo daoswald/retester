@@ -145,7 +145,7 @@ __DATA__
        </div> 
     % }
     % if( length param('regexp' ) ) {
-        <a href="<%== url_for('/')->query(
+        <a href="<%= url_for('/')->query(
                       target => param('target'), regexp => param('regexp'),
                       modifiers => param('modifiers')                      )
         =%>">Link to this test</a>
@@ -165,7 +165,7 @@ __DATA__
           <li>List Context Return Values
             <ul>
             %  foreach my $rv ( @{$re_obj->match_rv} ) {
-              <li>[<mark><code><%== $rv =%></code></mark>]</li>
+              <li>[<mark><code><%= $rv =%></code></mark>]</li>
             %  }
             </ul>
           </li>
@@ -175,8 +175,8 @@ __DATA__
             <ul>
             %  foreach my $digit ( 1 .. $#{$re_obj->digits} ) {
                 <li>
-                    <code>$<%== $digit =%> =></code>
-                    [<mark><code><%== $re_obj->digits->[$digit] =%></code></mark>]
+                    <code>$<%= $digit =%> =></code>
+                    [<mark><code><%= $re_obj->digits->[$digit] =%></code></mark>]
                 </li>
             %  }
             </ul>
@@ -187,8 +187,8 @@ __DATA__
             <ul>
               % foreach my $name ( keys %{$re_obj->hash_plus} ) {
                   <li>
-                    $+{<%== $name =%>} =>
-                    [<mark><code><%== $re_obj->hash_plus->{$name} =%></code></mark>]
+                    $+{<%= $name =%>} =>
+                    [<mark><code><%= $re_obj->hash_plus->{$name} =%></code></mark>]
                   </li>
               % }
             </ul>
@@ -197,43 +197,43 @@ __DATA__
         % if( defined $re_obj->prematch ) {
             <li>
               <code>${^PREMATCH} =></code>
-              [<mark><code><%== $re_obj->prematch =%></code></mark>]
+              [<mark><code><%= $re_obj->prematch =%></code></mark>]
             </li>
         % }
         % if( defined $re_obj->match ) {
             <li>
               <code>${^MATCH} =></code>
-              [<mark><code><%== $re_obj->match =%></code></mark>]
+              [<mark><code><%= $re_obj->match =%></code></mark>]
             </li>
         % }
         % if( defined $re_obj->postmatch ) {
             <li>
               <code>${^POSTMATCH} =></code>
-              [<mark><code><%== $re_obj->postmatch =%></code></mark>]
+              [<mark><code><%= $re_obj->postmatch =%></code></mark>]
             </li>
         % }
         % if( defined $re_obj->carat_n ) {
             <li>
               <code>${^N} =></code>
-              [<mark><code><%== $re_obj->carat_n =%></code></mark>]
+              [<mark><code><%= $re_obj->carat_n =%></code></mark>]
             </li>
         % }
         % foreach my $name ( keys %{$re_obj->hash_minus} ) {
             <li>
-              <code>$-{<%== $name =%>} =></code>
-              (<code><%== "@{$re_obj->hash_minus->{$name}}" =%></code>)
+              <code>$-{<%= $name =%>} =></code>
+              (<code><%= "@{$re_obj->hash_minus->{$name}}" =%></code>)
             </li>
         % }
         % if( @{$re_obj->array_minus} ) {
             <li>
               <code>@- => </code>
-              (<code><%== "@{$re_obj->array_minus}" =%></code>)
+              (<code><%= "@{$re_obj->array_minus}" =%></code>)
             </li>
         % }
         % if( @{$re_obj->array_plus} ) {
             <li>
               <code>@+ => </code>
-              (<code><%== "@{$re_obj->array_plus}" =%></code>)
+              (<code><%= "@{$re_obj->array_plus}" =%></code>)
             </li>
         % }
       </ul>
