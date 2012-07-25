@@ -12,15 +12,18 @@ use Sys::SigAction qw( timeout_call );
 use Time::HiRes;
 use Safe;
 use Carp;
+use List::MoreUtils qw( any );
 
 our $VERSION = 0.01;
 
 # Paranoia limits  ** Still much work to be done on DOS-crafted RE's.
-use constant ALARM_TIMEOUT    => 2;
-use constant MATCH_TIMEOUT    => 1.25;
-use constant ALARM_RESET      => 0;
-use constant MAX_DEBUG_LENGTH => 16384;
-use constant MAX_QUANTIFIERS  => 30;
+use constant ALARM_TIMEOUT      => 2;
+use constant MATCH_TIMEOUT      => 1.25;
+use constant ALARM_RESET        => 0;
+use constant MAX_DEBUG_LENGTH   => 16384;
+use constant MAX_QUANTIFIERS    => 30;
+use constant MAX_REG_LENGTH     => 1024;
+use constant MAX_TARGET_LENGTH  => 1024;
 
 has regex => ( is => 'ro', required => 1 );    # User input.
 has modifiers => ( is => 'ro' );               # User input.
@@ -72,7 +75,11 @@ sub _sanitize_re_string {
     no warnings 'qw';    ## no critic(warnings)
     my $count = 0;
     $count++ while $re_string =~ /(?<!\\)(?:[*+]|\{\d,\d*\})/g;
-    if( $count > MAX_QUANTIFIERS ) {
+    if(
+         $count > MAX_QUANTIFIERS
+      || length($re_string) > MAX_REG_LENGTH
+      || $self->_is_common_abusive_regex( $re_string )
+    ) {
         $self->bad_regex(1);
         return '[1-0]Disallowed regex pattern';
     }
@@ -80,6 +87,19 @@ sub _sanitize_re_string {
       \$[0<>#!+-]    \$\{[\w<>+^-]}    \@\{\w+}     %;
     $re_string =~ s/(?<!\\)($_)/\\$1/gxsm foreach @bad_varnames;
     return $re_string;
+}
+
+sub _is_common_abusive_regex {
+    my ( $self, $re_string ) = @_;
+    my @badlist = (
+        qr/\(\.\*\)\{\d+,\d+\}\[[^]]+\]/,
+        qr/\(.+?\+\)\+/,
+        qr/\(.+?\*\)\*/,
+        qr/\(\.+?\+\|\.?+\+\)\*/,
+        qr/^(*FAIL)$/,        
+    );
+    warn $badlist[0];
+    return any { $re_string =~ m/$_/ } @badlist;
 }
 
 sub _has_g_modifier {
@@ -135,7 +155,9 @@ sub _safe_match_gather {
                 $self->_capture_dump(
                     {
                         digits => [
-                            map { substr $target, $-[$_], $+[$_] - $-[$_] } 0 .. $#-
+                            map {
+                                substr $target, $-[$_], $+[$_] - $-[$_]
+                            } 0 .. $#-
                         ],
                         hash_plus   => {%+},
                         hash_minus  => {%-},

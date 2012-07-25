@@ -22,6 +22,8 @@ app->defaults(
     ]
 );
 
+app->defaults( MAX_TARGET_LEN => 1024 );
+
 any q{/} => sub {
     my $self = shift;
     $self->stash( { re_obj => undef, match_success => undef } );
@@ -33,8 +35,15 @@ any q{/} => sub {
             modifiers => $self->param('modifiers') || q{}
         }
     );
-    $self->stash( match_success => $re->do_match( $self->param('target') ) );
-    $self->stash( re_obj => $re );
+    if( length( $self->param('target')  )
+        > $self->app->defaults('MAX_TARGET_LEN' )
+    ) {
+        $self->stash( match_success => undef )
+    }
+    else {
+        $self->stash( match_success => $re->do_match( $self->param('target') ) );
+        $self->stash( re_obj => $re );
+    }
     $self->render('index');
 };
 
@@ -71,7 +80,7 @@ __DATA__
                   cols      => 80,
                   rows      => 5,
                   class     => 'span4',
-                  maxlength => 2048,
+                  maxlength => 1024,
                   title     =>
                     'Enter a string to be targeted in the pattern match.'
     =%>
@@ -83,7 +92,7 @@ __DATA__
                   cols      => 80,
                   rows      => 5,
                   class     => 'span4',
-                  maxlength => 2048,
+                  maxlength => 1024,
                   title     =>
                     'Enter a valid Perl regular expression.  '
                     . 'Delimiters aren\'t necessary.'
@@ -127,7 +136,7 @@ __DATA__
          Check the "Capture variables" and "Debug info" sections for more info.
        </div>
     % }
-    % if( defined $match_success && ! $match_success ) {
+    % elsif( defined $match_success && ! $match_success ) {
        <div class = "alert alert-warning">
          <h2 class="alert-heading">
            No match!
@@ -135,7 +144,16 @@ __DATA__
          Check the "Debug info" section to see why.
        </div> 
     % }
-    % if( param('regexp') && ! defined $match_success ) {
+    % elsif( length( param('target') ) > $MAX_TARGET_LEN ) {
+        <div class="alert alert-error">
+          <h2 class="alert-heading">
+            Target too long.
+          </h2>
+          This application limits the length of the target string to 
+          <%= $MAX_TARGET_LEN %> max.
+        </div>
+    % }
+    % elsif( param('regexp') && ! defined $match_success ) {
        <div class= "alert alert-error">
          <h2 class="alert-heading">
            Invalid regular expression!
