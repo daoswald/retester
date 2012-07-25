@@ -17,6 +17,7 @@ WriteMakefile(
         'Plack'           => '0',
         'Test::More'      => '0',
         'Test::Exception' => '0',
+        'List::MoreUtils' => '0',
     },
     test => { TESTS => 't/*.t' }
 );
