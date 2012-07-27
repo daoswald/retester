@@ -98,7 +98,6 @@ sub _is_common_abusive_regex {
         qr/\(\.+?\+\|\.?+\+\)\*/,
         qr/^(*FAIL)$/,        
     );
-    warn $badlist[0];
     return any { $re_string =~ m/$_/ } @badlist;
 }
 
