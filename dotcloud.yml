@@ -2,4 +2,6 @@ www:
   type: perl
   config:
     perl_version: v5.16.x
+    uwsgi_memory_report: true
+    uwsgi_processes: 2
 
