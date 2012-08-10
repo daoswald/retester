@@ -6,9 +6,8 @@ use feature qw( unicode_strings );
 use lib 'lib';
 use SafeMatchStats;
 
-app->secret('Some Session Secret');    # Unimportant: We're not using sessions.
+app->secret('No sessions');    # Unimportant: We're not using sessions.
 
-plugin 'PoweredBy';
 plugin 'PODRenderer';
 
 app->defaults(
@@ -41,7 +40,7 @@ any q{/} => sub {
         $self->stash( match_success => undef )
     }
     else {
-        $self->stash( match_success => $re->do_match( $self->param('target') ) );
+        $self->stash( match_success => $re->do_match($self->param('target')) );
         $self->stash( re_obj => $re );
     }
     $self->render('index');
@@ -76,26 +75,26 @@ __DATA__
   <p>
     Target string:
     <br />
-    <%= text_area target    => 'Just another Perl hacker,',
-                  cols      => 80,
-                  rows      => 5,
-                  class     => 'span4',
-                  maxlength => 1024,
-                  title     =>
-                    'Enter a string to be targeted in the pattern match.'
+    <%= text_area
+      target    => 'Just another Perl hacker,',
+      cols      => 80,
+      rows      => 5,
+      class     => 'span4',
+      maxlength => 1024,
+      title     => 'Enter a string to be targeted in the pattern match.'
     =%>
   </p>
   <p>
     Regular Expression:
     <br />
-    <%= text_area regexp    => '\s(\w{4})\b',
-                  cols      => 80,
-                  rows      => 5,
-                  class     => 'span4',
-                  maxlength => 1024,
-                  title     =>
-                    'Enter a valid Perl regular expression.  '
-                    . 'Delimiters aren\'t necessary.'
+    <%= text_area
+      regexp    => '\s(\w{4})\b',
+      cols      => 80,
+      rows      => 5,
+      class     => 'span4',
+      maxlength => 1024,
+      title     =>
+      'Enter a valid Perl regular expression. Delimiters aren\'t necessary.'
     =%>
     <br />
     <small>
@@ -106,20 +105,22 @@ __DATA__
   <p>
     Modifiers:
     <br />
-    <%= text_field modifiers    =>
-                   cols         => '30', 
-                   placeholder  => 'Valid Modifiers: [gmsixadlu]',
-                   maxlength    => '10',
-                   pattern      => '(?:[gmsixadlu^-][gmsixadlu-]{0,10})?',
-                   title        =>
-                    'Valid modifiers are from the set [gmsixadlu^-], or leave empty.'
+    <%= text_field
+      modifiers    =>
+      cols         => '30', 
+      placeholder  => 'Valid Modifiers: [gmsixadlu]',
+      maxlength    => '10',
+      pattern      => '(?:[gmsixadlu^-][gmsixadlu-]{0,10})?',
+      title        =>
+        'Valid modifiers are from the set [gmsixadlu^-], or leave empty.'
     %>
     %= submit_button 'Attempt Match', class => 'btn btn-primary'
     <br />
       <small>
         Using the <code>/g</code> modifier will run match in list context.
         <br />
-        <code>/r</code> is set by default to enable access to all match variables.
+        <code>/r</code> is set by default to enable access to all match
+        variables.
       </small>
   </p>
   <p>
@@ -144,7 +145,7 @@ __DATA__
          Check the "Debug info" section to see why.
        </div> 
     % }
-    % elsif( length( param('target') ) > $MAX_TARGET_LEN ) {
+    % elsif( defined param('target') && length(param('target')) > $MAX_TARGET_LEN ) {
         <div class="alert alert-error">
           <h2 class="alert-heading">
             Target too long.
@@ -162,7 +163,7 @@ __DATA__
          regular expression.  Check the syntax, or reduce backtracking.
        </div> 
     % }
-    % if( length param('regexp' ) ) {
+    % if( defined param('regexp') && length param('regexp' ) ) {
         <a href="<%= url_for('/')->query(
                       target => param('target'), regexp => param('regexp'),
                       modifiers => param('modifiers')                      )
