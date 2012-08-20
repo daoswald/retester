@@ -89,6 +89,7 @@ sub _sanitize_re_string {
     return $re_string;
 }
 
+# This is only effective against a few RE's published on the internet.
 sub _is_common_abusive_regex {
     my ( $self, $re_string ) = @_;
     my @badlist = (
