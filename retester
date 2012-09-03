@@ -292,12 +292,12 @@ __DATA__
     %= javascript '/bootstrap/js/bootstrap.min.js'
     <title><%= title %></title>
   </head>
-  <body>
+  <body style="padding: 80px;">
     <header class="container">
       <nav class="row">
         <div class="navbar navbar-fixed-top">
           <div class="navbar-inner">
-            <div class="container">
+            <div class="container" style="width: auto; padding: 0 20px;">
               <a class="brand" href="/">The Perl Regex Tester</a>
               <ul class="nav">
                 % foreach my $item ( @{$nav_bar_items} ) {
@@ -310,8 +310,6 @@ __DATA__
           </div> <!-- /navbar-inner -->
         </div> <!-- /nav-bar -->
       </nav>
-    <!-- v-------------- It wouldn't be HTML/CSS if we had no layout cheats. -->
-    &nbsp;<br /> &nbsp;<br />
     </header>
     <article class="row span12">
       <%= content %>
