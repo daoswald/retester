@@ -2,3 +2,9 @@ approot/MYMETA.*
 approot/Makefile
 approot/pm_to_blib
 approot/blib/
+MYMETA.json
+MYMETA.yml
+Makefile
+blib/
+pm_to_blib
+

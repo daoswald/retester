@@ -6,7 +6,7 @@ use feature qw( unicode_strings );
 use lib 'lib';
 use SafeMatchStats;
 
-app->secret('No sessions');    # Unimportant: We're not using sessions.
+app->secrets(['No sessions']);    # Unimportant: We're not using sessions.
 
 plugin 'PODRenderer';
 
